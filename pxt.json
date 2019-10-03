@@ -1,0 +1,27 @@
+{
+    "name": "pxt-kitronik-halohd",
+    "version": "0.0.1",
+    "description": "Blocks to simplify using Kitronik :VIEW Halo HD board in PXT",
+    "license": "MIT",
+    "dependencies": {
+        "core": "*",
+        "ws2812b": "github:Microsoft/pxt-ws2812b#v0.0.4"
+    },
+    "files": [
+        "README.md",
+        "halohd.ts"
+    ],
+    "testFiles": [
+        "tests.ts"
+    ],
+    "yotta": {
+        "config": {
+            "microbit-dal": {
+                "bluetooth": {
+                    "enabled": 0
+                }
+            }
+        }
+    },
+    "public": true
+}

@@ -1,0 +1,18 @@
+{
+    "target": "microbit",
+    "targetVersion": "2.1.13",
+    "name": "pxt-kitronik-halohd",
+    "meta": {},
+    "editor": "tsprj",
+    "pubId": "",
+    "pubCurrent": false,
+    "_rev": null,
+    "id": "c187d13d-791f-4575-927c-f7fd41bc0753",
+    "recentUse": 1570027865,
+    "modificationTime": 1570027865,
+    "blobId": null,
+    "blobVersion": null,
+    "blobCurrent": false,
+    "isDeleted": false,
+    "path": "pxt-kitronik-halohd"
+}

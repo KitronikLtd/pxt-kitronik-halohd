@@ -29,7 +29,9 @@ enum ZipLedColors {
 //% weight=100 color=#00A654 icon="\uf111" block="HaloHD"
 namespace kitronik_halo_hd {
 
-	//let initialised = false
+	////////////////////////////////
+    //          ZIP LEDS          //
+    ////////////////////////////////
 	
 	/**
 	 * Different modes for RGB or RGB+W ZIP strips
@@ -454,6 +456,10 @@ namespace kitronik_halo_hd {
         Shortest
     }
 
+    ////////////////////////////////
+    //         MICROPHONE         //
+    ////////////////////////////////
+
     /**
     * Read Sound Level blocks returns back a number of the current sound level at that point
     */
@@ -507,7 +513,7 @@ namespace kitronik_halo_hd {
     */
     //% subcategory="Microphone"
     //% blockId=kitronik_halo_hd_wait_for_clap
-    //% block="wait for %claps claps within %timerperiod|ms"
+    //% block="listen for %claps claps within %timerperiod|ms"
     //% claps.min=1 claps.max=10
     //% timerperiod.min=500 timerperiod.max=2500
     //% weight=95 blockGap=8
@@ -532,5 +538,454 @@ namespace kitronik_halo_hd {
     export function setClapSensitivity(value: number): void {
         value = Math.clamp(0, 100, value)
         kitronik_microphone.threshold = kitronik_microphone.baseVoltageLevel + (105 - value)
+    }
+
+    ////////////////////////////////
+    //         RTC BLOCKS         //
+    ////////////////////////////////
+
+    /**
+     * Set time on RTC, as three numbers
+     * @param setHours is to set the hours
+     * @param setMinutes is to set the minutes
+     * @param setSeconds is to set the seconds
+    */
+    //% subcategory="RTC"
+    //% blockId=kitronik_halo_hd_set_time 
+    //% block="Set Time to %setHours|hrs %setMinutes|mins %setSeconds|secs"
+    //% setHours.min=0 setHours.max=23
+    //% setMinutes.min=0 setMinutes.max=59
+    //% setSeconds.min=0 setSeconds.max=59
+    //% weight=100 blockGap=8
+    export function setTime(setHours: number, setMinutes: number, setSeconds: number): void {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+        
+        let bcdHours = kitronik_RTC.decToBcd(setHours)                           //Convert number to binary coded decimal
+        let bcdMinutes = kitronik_RTC.decToBcd(setMinutes)                       //Convert number to binary coded decimal
+        let bcdSeconds = kitronik_RTC.decToBcd(setSeconds)                       //Convert number to binary coded decimal
+        let writeBuf = pins.createBuffer(2)
+
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.STOP_RTC                                  //Disable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+
+        writeBuf[0] = kitronik_RTC.RTC_HOURS_REG
+        writeBuf[1] = kitronik_RTC.bcdHours                                      //Send new Hours value
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+
+        writeBuf[0] = kitronik_RTC.RTC_MINUTES_REG
+        writeBuf[1] = kitronik_RTC.bcdMinutes                                    //Send new Minutes value
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.START_RTC | kitronik_RTC.bcdSeconds                            //Send new seconds masked with the Enable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+    }
+
+    /**
+     * Read time from RTC as a string
+    */
+    //% subcategory="RTC"
+    //% blockId=kitronik_halo_hd_read_time 
+    //% block="Read Time as String"
+    //% weight=95 blockGap=8
+    export function readTime(): string {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+        
+        //read Values
+        kitronik_RTC.readValue()
+
+        let decSeconds = kitronik_RTC.bcdToDec(kitronik_RTC.currentSeconds, kitronik_RTC.RTC_SECONDS_REG)                  //Convert number to Decimal
+        let decMinutes = kitronik_RTC.bcdToDec(kitronik_RTC.currentMinutes, kitronik_RTC.RTC_MINUTES_REG)                  //Convert number to Decimal
+        let decHours = kitronik_RTC.bcdToDec(kitronik_RTC.currentHours, kitronik_RTC.RTC_HOURS_REG)                        //Convert number to Decimal
+
+        //Combine hours,minutes and seconds in to one string
+        let strTime: string = "" + ((decHours / 10)>>0) + decHours % 10 + ":" + ((decMinutes / 10)>>0) + decMinutes % 10 + ":" + ((decSeconds / 10)>>0) + decSeconds % 10
+
+        return strTime
+    }
+
+    /**
+     * Set date on RTC as three numbers
+     * @param setDay is to set the day in terms of numbers 1 to 31
+     * @param setMonths is to set the month in terms of numbers 1 to 12
+     * @param setYears is to set the years in terms of numbers 0 to 99
+    */
+    //% subcategory="RTC"
+    //% blockId=kitronik_halo_hd_set_date 
+    //% block="Set Date to %setDays|Day %setMonths|Month %setYear|Year"
+    //% setDay.min=1 setDay.max=31
+    //% setMonth.min=1 setMonth.max=12
+    //% setYear.min=0 setYear.max=99
+    //% weight=90 blockGap=8
+    export function setDate(setDay: number, setMonth: number, setYear: number): void {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+        
+        let leapYearCheck = 0
+        let writeBuf = pins.createBuffer(2)
+        let readBuf = pins.createBuffer(1)
+        let bcdDay = 0
+        let bcdMonths = 0
+        let bcdYears = 0
+        let readCurrentSeconds = 0
+
+        //Check day entered does not exceed month that has 30 days in
+        if ((setMonth == 4) || (setMonth == 6) || (setMonth == 9) || (setMonth == 11)) {
+            if (setDay == 31) {
+                setDay = 30
+            }
+        }
+        
+        //Leap year check and does not exceed 30 days
+        if ((setMonth == 2) && (setDay >= 29)) {
+            leapYearCheck = setYear % 4
+            if (leapYearCheck == 0)
+                setDay = 29
+            else
+                setDay = 28
+        }
+
+        bcdDay = kitronik_RTC.decToBcd(setDay)                       //Convert number to binary coded decimal
+        bcdMonths = kitronik_RTC.decToBcd(setMonth)                  //Convert number to binary coded decimal
+        bcdYears = kitronik_RTC.decToBcd(setYear)                    //Convert number to binary coded decimal
+
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+
+        readBuf = pins.i2cReadBuffer(kitronik_RTC.CHIP_ADDRESS, 1, false)
+        readCurrentSeconds = readBuf[0]
+
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.STOP_RTC                                  //Disable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+
+        writeBuf[0] = kitronik_RTC.RTC_DAY_REG
+        writeBuf[1] = bcdDay                                        //Send new Day value
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+
+        writeBuf[0] = kitronik_RTC.RTC_MONTH_REG
+        writeBuf[1] = bcdMonths                                     //Send new Months value
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+
+        writeBuf[0] = kitronik_RTC.RTC_YEAR_REG
+        writeBuf[1] = bcdYears                                      //Send new Year value
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.START_RTC | readCurrentSeconds                    //Enable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+    }
+
+    /**
+     * Read date from RTC as a string
+    */
+    //% subcategory="RTC"
+    //% blockId=kitronik_halo_hd_read_date 
+    //% block="Read Date as String"
+    //% weight=85 blockGap=8
+    export function readDate(): string {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+        
+        //read Values
+        kitronik_RTC.readValue()
+
+        let decDay = kitronik_RTC.bcdToDec(kitronik_RTC.currentDay, kitronik_RTC.RTC_DAY_REG)                      //Convert number to Decimal
+        let decMonths = kitronik_RTC.bcdToDec(kitronik_RTC.currentMonth, kitronik_RTC.RTC_MONTH_REG)               //Convert number to Decimal
+        let decYears = kitronik_RTC.bcdToDec(kitronik_RTC.currentYear, kitronik_RTC.RTC_YEAR_REG)                  //Convert number to Decimal
+
+        //let strDate: string = decDay + "/" + decMonths + "/" + decYears
+        let strDate: string = "" + ((decDay / 10)>>0) + (decDay % 10) + "/" + ((decMonths / 10)>>0) + (decMonths % 10) + "/" + ((decYears / 10)>>0) + (decYears % 10)
+        return strDate
+    }
+
+    /**
+     * Set the hours on the RTC in 24 hour format
+     * @param writeHours is to set the hours in terms of numbers 0 to 23
+    */
+    //% subcategory="RTC more..."
+    //% blockId=kitronik_halo_hd_write_hours 
+    //% block="Set Hours to %hours|hrs"
+    //% hours.min=0 hours.max=23
+    //% weight=80 blockGap=8
+    export function writeHours(hours: number): void {
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+
+        let bcdHours = kitronik_RTC.decToBcd(hours)
+        let writeBuf = pins.createBuffer(2)
+
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.STOP_RTC                                      //Disable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+        writeBuf[0] = kitronik_RTC.RTC_HOURS_REG
+        writeBuf[1] = bcdHours                                      //Send new value
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.START_RTC                                 //Enable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+    }
+
+    /**Read hours from RTC*/
+    //% subcategory="RTC more..."
+    //% blockId=kitronik_halo_hd_read_hours 
+    //% block="Read Hours as Number"
+    //% weight=75 blockGap=8
+    export function readHours(): number {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+        
+        //read Values
+        kitronik_RTC.readValue()
+
+        let decHours = kitronik_RTC.bcdToDec(kitronik_RTC.currentHours, kitronik_RTC.RTC_HOURS_REG)                    //Convert number to Decimal
+        return decHours
+    }
+
+    /**
+     * Set the minutes on the RTC
+     * @param writeMinutes is to set the minutes in terms of numbers 0 to 59
+    */
+    //% subcategory="RTC more..."
+    //% blockId=kitronik_halo_hd_write_minutes 
+    //% block="Set Minutes to %minutes|mins"
+    //% minutes.min=0 minutes.max=59
+    //% weight=70 blockGap=8
+    export function writeMinutes(minutes: number): void {
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+
+        let bcdMinutes = kitronik_RTC.decToBcd(minutes)
+        let writeBuf = pins.createBuffer(2)
+
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.STOP_RTC                                      //Disable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+        writeBuf[0] = kitronik_RTC.RTC_MINUTES_REG
+        writeBuf[1] = bcdMinutes                                        //Send new value
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.START_RTC                                 //Enable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+    }
+
+    /**Read minutes from RTC*/
+    //% subcategory="RTC more..."
+    //% blockId=kitronik_halo_hd_read_minutes 
+    //% block="Read Minutes as Number"
+    //% weight=65 blockGap=8
+    export function readMinutes(): number {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+        
+        //read Values
+        kitronik_RTC.readValue()
+
+        let decMinutes = kitronik_RTC.bcdToDec(kitronik_RTC.currentMinutes, kitronik_RTC.RTC_MINUTES_REG)                  //Convert number to Decimal
+        return decMinutes
+    }
+
+    /**
+     * Set the seconds on the RTC
+     * @param writeSeconds is to set the seconds in terms of numbers 0 to 59
+    */
+    //% subcategory="RTC more..."
+    //% blockId=kitronik_halo_hd_write_seconds 
+    //% block="Set Seconds to %seconds|secs"
+    //% seconds.min=0 seconds.max=59
+    //% weight=60 blockGap=8
+    export function writeSeconds(seconds: number): void {
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+
+        let bcdSeconds = kitronik_RTC.decToBcd(seconds)
+        let writeBuf = pins.createBuffer(2)
+
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.STOP_RTC                                      //Disable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.START_RTC | bcdSeconds                        //Enable Oscillator and Send new value
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+    }
+
+    /**Read seconds from RTC*/
+    //% subcategory="RTC more..."
+    //% blockId=kitronik_halo_hd_read_seconds 
+    //% block="Read Seconds as Number"
+    //% weight=55 blockGap=8
+    export function readSeconds(): number {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+        
+        //read Values
+        kitronik_RTC.readValue()
+
+        let decSeconds = kitronik_RTC.bcdToDec(kitronik_RTC.currentSeconds, kitronik_RTC.RTC_SECONDS_REG)                  //Convert number to Decimal
+
+        return decSeconds
+    }
+
+
+    /**
+     * Set the day on the RTC
+     * @param writeDay is to set the day in terms of numbers 0 to 31
+    */
+    //% subcategory="RTC more..."
+    //% blockId=kitronik_halo_hd_write_day
+    //% block="Set Day to %day|day"
+    //% day.min=1 day.max=31
+    //% weight=50 blockGap=8
+    export function writeDay(day: number): void {
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+
+        let bcdDay = kitronik_RTC.decToBcd(day)
+        let writeBuf = pins.createBuffer(2)
+
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.STOP_RTC                                      //Disable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+        writeBuf[0] = kitronik_RTC.RTC_DAY_REG
+        writeBuf[1] = bcdDay                                        //Send new value
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.START_RTC                         //Enable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+    }
+
+    /**Read day from RTC*/
+    //% subcategory="RTC more..."
+    //% blockId=kitronik_halo_hd_read_day 
+    //% block="Read Day as Number"
+    //% weight=45 blockGap=8
+    export function readDay(): number {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+        
+        //read Values
+        kitronik_RTC.readValue()
+
+        let decDay = kitronik_RTC.bcdToDec(kitronik_RTC.currentDay, kitronik_RTC.RTC_DAY_REG)                  //Convert number to Decimal
+
+        return decDay
+    }
+
+    /**
+     * set the month on the RTC
+     * @param writeMonth is to set the month in terms of numbers 1 to 12
+    */
+    //% subcategory="RTC more..."
+    //% blockId=kitronik_halo_hd_write_month 
+    //% block="Set Month to %month|month"
+    //% month.min=1 month.max=12
+    //% weight=40 blockGap=8
+    export function writeMonth(month: number): void {
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+
+        let bcdMonth = kitronik_RTC.decToBcd(month)
+        let writeBuf = pins.createBuffer(2)
+
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.STOP_RTC                                      //Disable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+        writeBuf[0] = kitronik_RTC.RTC_MONTH_REG
+        writeBuf[1] = bcdMonth                                      //Send new value
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.START_RTC                                     //Enable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+    }
+
+    /**Read month from RTC*/
+    //% subcategory="RTC more..."
+    //% blockId=kitronik_halo_hd_read_month 
+    //% block="Read Month as Number"
+    //% weight=35 blockGap=8
+    export function readMonth(): number {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+        
+        //read Values
+        kitronik_RTC.readValue()
+
+        //pins.i2cReadBuffer(kitronik_RTC.CHIP_ADDRESS, buf, false)
+        let decMonths = kitronik_RTC.bcdToDec(kitronik_RTC.currentMonth, kitronik_RTC.RTC_MONTH_REG)                   //Convert number to Decimal
+
+        return decMonths
+    }
+
+    /**
+     * set the year on the RTC
+     * @param writeYear is to set the year in terms of numbers 0 to 99
+    */
+    //% subcategory="RTC more..."
+    //% blockId=kitronik_halo_hd_write_year 
+    //% block="Set Year to %year|year"
+    //% year.min=0 year.max=99
+    //% weight=30 blockGap=8
+    export function writeYear(year: number): void {
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+
+        let bcdYear = kitronik_RTC.decToBcd(year)                                //Convert number to BCD
+        let writeBuf = pins.createBuffer(2)
+
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.STOP_RTC                                      //Disable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+        writeBuf[0] = kitronik_RTC.RTC_YEAR_REG
+        writeBuf[1] = bcdYear                                       //Send new value
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+        writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
+        writeBuf[1] = kitronik_RTC.START_RTC                                 //Enable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+    }
+
+    /**Read year from RTC*/
+    //% subcategory="RTC more..."
+    //% blockId=kitronik_halo_hd_read_year 
+    //% block="Read Year as Number"
+    //% weight=25 blockGap=8
+    export function readYear(): number {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+        
+        //read Values
+        kitronik_RTC.readValue()
+
+        let decYears = kitronik_RTC.bcdToDec(kitronik_RTC.currentYear, kitronik_RTC.RTC_YEAR_REG)                  //Convert number to Decimal
+
+        return decYears
     }
 } 

@@ -573,15 +573,15 @@ namespace kitronik_halo_hd {
         pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
 
         writeBuf[0] = kitronik_RTC.RTC_HOURS_REG
-        writeBuf[1] = kitronik_RTC.bcdHours                                      //Send new Hours value
+        writeBuf[1] = bcdHours                                      //Send new Hours value
         pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
 
         writeBuf[0] = kitronik_RTC.RTC_MINUTES_REG
-        writeBuf[1] = kitronik_RTC.bcdMinutes                                    //Send new Minutes value
+        writeBuf[1] = bcdMinutes                                    //Send new Minutes value
         pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
 
         writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
-        writeBuf[1] = kitronik_RTC.START_RTC | kitronik_RTC.bcdSeconds                            //Send new seconds masked with the Enable Oscillator
+        writeBuf[1] = kitronik_RTC.START_RTC | bcdSeconds                            //Send new seconds masked with the Enable Oscillator
         pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
     }
 

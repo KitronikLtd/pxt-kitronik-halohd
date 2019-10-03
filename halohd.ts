@@ -29,6 +29,19 @@ enum ZipLedColors {
 //% weight=100 color=#00A654 icon="\uf111" block="HaloHD"
 namespace kitronik_halo_hd {
 
+    ////////////////////////////////
+    //           MUSIC            //
+    ////////////////////////////////
+
+    /**
+     * Setup micro:bit to play music through Halo HD buzzer
+     */
+    //% blockId="kitronik_halo_hd_buzzer_setup" block="set music pin for buzzer"
+    //% weight=100 blockGap=8
+    export function setBuzzerPin(): void {
+        pins.analogSetPitchPin(AnalogPin.P14)
+    }
+
 	////////////////////////////////
     //          ZIP LEDS          //
     ////////////////////////////////

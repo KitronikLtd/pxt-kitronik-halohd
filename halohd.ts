@@ -501,8 +501,8 @@ namespace kitronik_halo_hd {
 
     /**
     * Performs an action when a spike in sound
-    * @param claps is the number of claps to listen out for before running the function e.g. "1"
-    * @param timerperiod is period of time in which to listen for the claps or spikes e.g. "1000"
+    * @param claps is the number of claps to listen out for before running the function eg: 1
+    * @param timerperiod is period of time in which to listen for the claps or spikes eg: 1000
     * @param soundSpike_handler is function that is run once detection in sound 
     */
     //% subcategory="Microphone"

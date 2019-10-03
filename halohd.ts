@@ -27,9 +27,9 @@ enum ZipLedColors {
  * Kitronik ZIP Halo HD MakeCode Package
  */
 //% weight=100 color=#00A654 icon="\uf111" block="HaloHD"
-namespace Kitronik_Halo_Hd {
+namespace kitronik_halo_hd {
 
-	let initialised = false
+	//let initialised = false
 	
 	/**
 	 * Different modes for RGB or RGB+W ZIP strips
@@ -57,8 +57,8 @@ namespace Kitronik_Halo_Hd {
          * @param startHue the start hue value for the rainbow, eg: 1
          * @param endHue the end hue value for the rainbow, eg: 360
          */
-        //% subcategory=LEDs
-        //% blockId="kitronik_set_halo_hd_rainbow" block="%haloDisplay|show rainbow from %startHue|to %endHue" 
+        //% subcategory="ZIP LEDs"
+        //% blockId="kitronik_halo_hd_rainbow" block="%haloDisplay|show rainbow from %startHue|to %endHue" 
         //% weight=94 blockGap=8
         showRainbow(startHue: number = 1, endHue: number = 360) {
             if (this._length <= 0) return;
@@ -123,9 +123,9 @@ namespace Kitronik_Halo_Hd {
          * @param value current value to plot
          * @param high maximum value, eg: 255
          */
-        //% subcategory=LEDs
+        //% subcategory="ZIP LEDs"
         //% weight=84
-        //% blockId=kitronik_show_bar_graph block="%haloDisplay|show bar graph of %value|up to %high" 
+        //% blockId=kitronik_halo_hd_show_bar_graph block="%haloDisplay|show bar graph of %value|up to %high" 
         showBarGraph(value: number, high: number): void {
             if (high <= 0) {
                 this.clear();
@@ -160,7 +160,7 @@ namespace Kitronik_Halo_Hd {
          * @param start offset in the LED strip to start the range
          * @param length number of LEDs in the range. eg: 4
          */
-        //% subcategory=LEDs
+        //% subcategory="ZIP LEDs"
         //% weight=89
         //% blockId="kitronik_halo_hd_range" block="%haloDisplay|range from %start|with %length|leds"
         range(start: number, length: number): ZIPHaloHd {
@@ -181,8 +181,8 @@ namespace Kitronik_Halo_Hd {
          * You need to call ``show`` to make the changes visible.
          * @param offset number of ZIP LEDs to rotate forward, eg: 1
          */
-        //% subcategory=LEDs
-        //% blockId="kitronik_zip_halo_display_rotate" block="%haloDisplay|rotate ZIP LEDs by %offset" blockGap=8
+        //% subcategory="ZIP LEDs"
+        //% blockId="kitronik_halo_hd_display_rotate" block="%haloDisplay|rotate ZIP LEDs by %offset" blockGap=8
         //% weight=93
         rotate(offset: number = 1): void {
             const stride = this._mode === ZipLedMode.RGBW ? 4 : 3;
@@ -193,8 +193,8 @@ namespace Kitronik_Halo_Hd {
          * Shows whole ZIP Halo display as a given color (range 0-255 for r, g, b). 
          * @param rgb RGB color of the LED
          */
-        //% subcategory=LEDs
-        //% blockId="kitronik_zip_halo_display_set_strip_color" block="%haloDisplay|show color %rgb=zip_colors" 
+        //% subcategory="ZIP LEDs"
+        //% blockId="kitronik_halo_hd_display_set_strip_color" block="%haloDisplay|show color %rgb=kitronik_halo_hd_colors" 
         //% weight=99 blockGap=8
         showColor(rgb: number) {
         	rgb = rgb >> 0;
@@ -203,9 +203,22 @@ namespace Kitronik_Halo_Hd {
         }
 
         /**
+         * Set particular ZIP LED to a given color. 
+         * You need to call ``show changes`` to make the changes visible.
+         * @param zipLedNum position of the ZIP LED in the string
+         * @param rgb RGB color of the ZIP LED
+         */
+        //% subcategory="ZIP LEDs"
+        //% blockId="kitronik_halo_hd_set_zip_color" block="%haloDisplay|set ZIP LED %zipLedNum|to %rgb=kitronik_halo_hd_colors" 
+        //% weight=98 blockGap=8
+        setZipLedColor(zipLedNum: number, rgb: number): void {
+            this.setPixelRGB(zipLedNum >> 0, rgb >> 0);
+        }
+
+        /**
          * Send all the changes to the ZIP Halo display.
          */
-        //% subcategory=LEDs
+        //% subcategory="ZIP LEDs"
         //% blockId="kitronik_halo_hd_display_show" block="%haloDisplay|show" blockGap=8
         //% weight=96
         show() {
@@ -216,7 +229,7 @@ namespace Kitronik_Halo_Hd {
          * Turn off all LEDs on the ZIP Halo display.
          * You need to call ``show`` to make the changes visible.
          */
-        //% subcategory=LEDs
+        //% subcategory="ZIP LEDs"
         //% blockId="kitronik_halo_hd_display_clear" block="%haloDisplay|clear"
         //% weight=95
         
@@ -229,7 +242,7 @@ namespace Kitronik_Halo_Hd {
          * Set the brightness of the ZIP Halo display. This flag only applies to future operation.
          * @param brightness a measure of LED brightness in 0-255. eg: 255
          */
-        //% subcategory=LEDs
+        //% subcategory="ZIP LEDs"
         //% blockId="kitronik_halo_hd_display_set_brightness" block="%haloDisplay|set brightness %brightness" blockGap=8
         //% weight=92
         
@@ -340,8 +353,8 @@ namespace Kitronik_Halo_Hd {
      * Create a new ZIP LED driver for ZIP Halo Display.
 	 * @param numZips number of leds in the strip, eg: 60
      */
-    //% subcategory=LEDs
-    //% blockId="kitronik_zip_halo_display_create" block="to Halo HD with %numZips|Zips"
+    //% subcategory="ZIP LEDs"
+    //% blockId="kitronik_halo_hd_display_create" block="to Halo HD with %numZips|Zips"
     //% weight=100 blockGap=8
     //% trackArgs=0,2
     //% blockSetVariable=haloDisplay
@@ -363,9 +376,9 @@ namespace Kitronik_Halo_Hd {
      * @param green value of the green channel between 0 and 255. eg: 255
      * @param blue value of the blue channel between 0 and 255. eg: 255
      */
-    //% subcategory=LEDs
+    //% subcategory="ZIP LEDs"
     //% weight=1
-    //% blockId="halo_hd_rgb" block="red %red|green %green|blue %blue"
+    //% blockId="kitronik_halo_hd_rgb" block="red %red|green %green|blue %blue"
     export function rgb(red: number, green: number, blue: number): number {
         return packRGB(red, green, blue);
     }
@@ -373,9 +386,9 @@ namespace Kitronik_Halo_Hd {
     /**
      * Gets the RGB value of a known color
     */
-    //% subcategory=LEDs
+    //% subcategory="ZIP LEDs"
     //% weight=2 blockGap=8
-    //% blockId="halo_hd_colors" block="%color"
+    //% blockId="kitronik_halo_hd_colors" block="%color"
     export function colors(color: ZipLedColors): number {
         return color;
     }
@@ -439,5 +452,85 @@ namespace Kitronik_Halo_Hd {
         Clockwise,
         CounterClockwise,
         Shortest
+    }
+
+    /**
+    * Read Sound Level blocks returns back a number of the current sound level at that point
+    */
+    //% subcategory="Microphone"
+    //% blockId=kitronik_halo_hd_read_sound_level
+    //% block="read sound level"
+    //% weight=100 blockGap=8
+    export function readSoundLevel() {
+        if (kitronik_microphone.initialised == false) {
+            kitronik_microphone.init()
+        }
+        let read = pins.analogReadPin(kitronik_microphone.microphonePin)
+        return read
+    }
+
+    /**
+    * Read Sound Level blocks returns back a number of the current sound level averaged over 5 samples
+    */
+    //% subcategory="Microphone"
+    //% blockId=kitronik_halo_hd_read_average_sound_level
+    //% block="read average sound level"
+    //% weight=100 blockGap=8
+    export function readAverageSoundLevel() {
+        let x = 0
+        let soundlevel = 0
+        let sample = 0
+
+        if (kitronik_microphone.initialised == false) {
+            kitronik_microphone.init()
+        }
+
+        if (kitronik_microphone.micListening == false) {
+            kitronik_microphone.micStartListening()
+        }
+
+        for (x = 0; x < 5; x++) {
+            sample = kitronik_microphone.samplesArray[x]
+            if (sample > soundlevel) {
+                soundlevel = sample
+            }
+        }
+
+        return soundlevel
+    }
+
+    /**
+    * Performs an action when a spike in sound
+    * @param claps is the number of claps to listen out for before running the function e.g. "1"
+    * @param timerperiod is period of time in which to listen for the claps or spikes e.g. "1000"
+    * @param soundSpike_handler is function that is run once detection in sound 
+    */
+    //% subcategory="Microphone"
+    //% blockId=kitronik_halo_hd_wait_for_clap
+    //% block="wait for %claps claps within %timerperiod|ms"
+    //% claps.min=1 claps.max=10
+    //% timerperiod.min=500 timerperiod.max=2500
+    //% weight=95 blockGap=8
+    export function waitForClap(claps: number, timerperiod: number, soundSpike_handler: Action): void {
+        if (kitronik_microphone.initialised == false) {
+            kitronik_microphone.init()
+        }
+        kitronik_microphone.numberOfClaps = claps
+        kitronik_microphone.period = timerperiod
+        kitronik_microphone.sound_handler = soundSpike_handler
+        kitronik_microphone.startClapListening()
+    }
+
+    /**
+     * Set how sensitive the microphone is when detecting claps
+     * @param value - sensitivity (0-100)
+     */
+    //% subcategory="Microphone"
+    //% blockId=kitronik_halo_hd_set_mic_sensitivity
+    //% block="Set mic sensitivity to %value"
+    //% value.min=0 value.max=100 value.defl=80
+    export function setClapSensitivity(value: number): void {
+        value = Math.clamp(0, 100, value)
+        kitronik_microphone.threshold = kitronik_microphone.baseVoltageLevel + (105 - value)
     }
 } 

@@ -1130,11 +1130,11 @@ namespace kitronik_halo_hd {
     //% subcategory="RTC"
     //% blockId=kitronik_halo_hd_set_single_alarm 
     //% block="set alarm %alarm|to %hour|:%min|||on %day|%date|%month"
-    //% date.fieldEditor="gridpicker" date.fieldOptions.columns=7
+    //% month.fieldEditor="gridpicker" month.fieldOptions.columns=7
     //% expandableArgumentMode="toggle"
     //% inlineInputMode=inline
     //% weight=25 blockGap=8
-    export function setSingleAlarm(alarm: number, hour: number, min: number, day?: Weekdays, date?: Date, month?: Months): void {
+    export function setSingleAlarm(alarm: number, hour: number, min: number, day?: Weekdays, date?: number, month?: Months): void {
         if (kitronik_RTC.initalised == false) {
             kitronik_RTC.secretIncantation()
         }

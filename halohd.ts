@@ -1001,4 +1001,157 @@ namespace kitronik_halo_hd {
 
         return decYears
     }
+
+    /**
+     * Days of the week
+     */
+    enum Weekdays {
+        //% block=Sunday
+        Sunday = 1,
+        //% block=Monday
+        Monday = 2,
+        //% block=Tuesday
+        Tuesday = 3,
+        //% block=Wednesday
+        Wednesday = 4,
+        //% block=Thursday
+        Thursday = 5,
+        //% block=Friday
+        Friday = 6,
+        //% block=Saturday
+        Saturday = 7
+    }
+
+    enum Date {
+        //% block=1
+        one = 1,
+        //% block=2
+        two = 2,
+        //% block=3
+        three = 2,
+        //% block=4
+        four = 4,
+        //% block=5
+        five = 5,
+        //% block=6
+        six = 6,
+        //% block=7
+        seven = 7,
+        //% block=8
+        eight = 8,
+        //% block=9
+        nine = 9,
+        //% block=10
+        ten = 10,
+        //% block=11
+        eleven = 11,
+        //% block=12
+        twelve = 12,
+        //% block=13
+        thirteen = 13,
+        //% block=14
+        fourteen = 14,
+        //% block=15
+        fifteen = 15,
+        //% block=16
+        sixteen = 16,
+        //% block=17
+        seventeen = 17,
+        //% block=18
+        eighteen = 18,
+        //% block=19
+        nineteen = 19,
+        //% block=20
+        twenty = 20,
+        //% block=21
+        twentyone = 21,
+        //% block=22
+        twentytwo = 22,
+        //% block=23
+        twentythree = 23,
+        //% block=24
+        twentyfour = 24,
+        //% block=25
+        twentyfive = 25,
+        //% block=26
+        twentysix = 26,
+        //% block=27
+        twentyseven = 27,
+        //% block=28
+        twentyeight = 28,
+        //% block=29
+        twentynine = 29,
+        //% block=30
+        thirty = 30,
+        //% block=31
+        thirtyone = 31
+    }
+
+    /**
+     * Months of the year
+     */
+    enum Months {
+        //% block=January
+        January = 1,
+        //% block=February
+        February = 2,
+        //% block=March
+        March = 3,
+        //% block=April
+        April = 4,
+        //% block=May
+        May = 5,
+        //% block=June
+        June = 6,
+        //% block=July
+        July = 7,
+        //% block=August
+        August = 8,
+        //% block=September
+        September = 9,
+        //% block=October
+        October = 10,
+        //% block=November
+        November = 11,
+        //% block=December
+        December = 12
+    }
+
+    // TO DO: RTC ALARM BLOCK
+    /**
+     * Set the alarm on the RTC
+     * @param alarm is the alarm selection (either 1 or 2)
+     * @param hour is the alarm hour setting (24 hour)
+     * @param min is the alarm minute setting
+     * @param day is a particular day of the week
+     * @param date is a particlar number day in the month
+     * @param month is a particular month in the year
+    */
+    //% subcategory="RTC"
+    //% blockId=kitronik_halo_hd_set_single_alarm 
+    //% block="set alarm %alarm|to %hour|:%min|||on %day|%date|%month"
+    //% date.fieldEditor="gridpicker" date.fieldOptions.columns=7
+    //% expandableArgumentMode="toggle"
+    //% inlineInputMode=inline
+    //% weight=25 blockGap=8
+    export function setSingleAlarm(alarm: number, hour: number, min: number, day?: Weekdays, date?: Date, month?: Months): void {
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+        
+    }
+
+    /**
+     * Test toggle expanding block
+     * @param test1
+     * @param test2
+    */
+    //% subcategory="RTC"
+    //% blockId=kitronik_halo_hd_toggle_test
+    //% block="this is a test %test1|||%test2|some text"
+    //% expandableArgumentMode="toggle"
+    //% weight=25 blockGap=8
+    export function toggleTest(test1: string, test2?: number): void {
+        
+    }
 } 

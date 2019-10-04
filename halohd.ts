@@ -1068,7 +1068,7 @@ namespace kitronik_halo_hd {
     //% expandableArgumentMode="toggle"
     //% inlineInputMode=inline
     //% weight=25 blockGap=8
-    export function setSingleAlarm(alarm: number, hour: number, min: number, day?: Weekdays, date?: number, month?: Months): void {
+    export function setSingleAlarm(alarm: number, hour: number, min: number, day?: number, date?: number, month?: number): void {
         if (kitronik_RTC.initalised == false) {
             kitronik_RTC.secretIncantation()
         }

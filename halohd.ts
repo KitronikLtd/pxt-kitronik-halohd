@@ -1065,7 +1065,6 @@ namespace kitronik_halo_hd {
     //% subcategory="RTC"
     //% blockId=kitronik_halo_hd_set_single_alarm 
     //% block="set alarm %alarm|to %hour|:%min|||on %day|%date|%month"
-    //% month.fieldEditor="gridpicker" month.fieldOptions.columns=4
     //% expandableArgumentMode="toggle"
     //% inlineInputMode=inline
     //% weight=25 blockGap=8

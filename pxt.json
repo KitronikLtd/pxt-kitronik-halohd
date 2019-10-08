@@ -1,13 +1,13 @@
 {
     "name": "pxt-kitronik-halohd",
     "version": "0.0.1",
-    "description": "Blocks to simplify using Kitronik :VIEW Halo HD board in PXT",
+    "description": "Blocks to simplify using the Kitronik :VIEW Halo HD board in PXT",
     "license": "MIT",
     "dependencies": {
         "core": "*",
         "ws2812b": "github:Microsoft/pxt-ws2812b#v0.0.4",
-        "kitronik_microphone": "github:KitronikLtd/pxt-kitronik-memsmic",
-        "kitronik_RTC": "github:KitronikLtd/pxt-kitronik-rtc-base"
+        "kitronik_microphone": "github:KitronikLtd/pxt-kitronik-memsmic#v0.0.2",
+        "kitronik_RTC": "github:KitronikLtd/pxt-kitronik-rtc-base#v0.0.4"
     },
     "files": [
         "README.md",

@@ -369,7 +369,7 @@ namespace kitronik_halo_hd {
 	 * @param numZips number of leds in the strip, eg: 60
      */
     //% subcategory="ZIP LEDs"
-    //% blockId="kitronik_halo_hd_display_create" block="to Halo HD with %numZips|Zips"
+    //% blockId="kitronik_halo_hd_display_create" block="to Halo HD with %numZips|ZIP LEDs"
     //% weight=100 blockGap=8
     //% trackArgs=0,2
     //% blockSetVariable=haloDisplay
@@ -1002,91 +1002,5 @@ namespace kitronik_halo_hd {
         return decYears
     }
 
-    /**
-     * Days of the week
-     */
-    enum Weekdays {
-        //% block=Sunday
-        Sunday = 1,
-        //% block=Monday
-        Monday = 2,
-        //% block=Tuesday
-        Tuesday = 3,
-        //% block=Wednesday
-        Wednesday = 4,
-        //% block=Thursday
-        Thursday = 5,
-        //% block=Friday
-        Friday = 6,
-        //% block=Saturday
-        Saturday = 7
-    }
-
-    /**
-     * Months of the year
-     */
-    enum Months {
-        //% block=January
-        January = 1,
-        //% block=February
-        February = 2,
-        //% block=March
-        March = 3,
-        //% block=April
-        April = 4,
-        //% block=May
-        May = 5,
-        //% block=June
-        June = 6,
-        //% block=July
-        July = 7,
-        //% block=August
-        August = 8,
-        //% block=September
-        September = 9,
-        //% block=October
-        October = 10,
-        //% block=November
-        November = 11,
-        //% block=December
-        December = 12
-    }
-
-    // TO DO: RTC ALARM BLOCK
-    /**
-     * Set the alarm on the RTC
-     * @param alarm is the alarm selection (either 1 or 2)
-     * @param hour is the alarm hour setting (24 hour)
-     * @param min is the alarm minute setting
-     * @param day is a particular day of the week
-     * @param date is a particlar number day in the month
-     * @param month is a particular month in the year
-    */
-    //% subcategory="RTC"
-    //% blockId=kitronik_halo_hd_set_single_alarm 
-    //% block="set alarm %alarm|to %hour|:%min|||on %day|%date|%month"
-    //% month.fieldEditor="gridpicker" month.fieldOptions.columns=4
-    //% expandableArgumentMode="toggle"
-    //% inlineInputMode=inline
-    //% weight=25 blockGap=8
-    export function setSingleAlarm(alarm: number, hour: number, min: number, day?: Weekdays, date?: number, month?: Months): void {
-        if (kitronik_RTC.initalised == false) {
-            kitronik_RTC.secretIncantation()
-        }
-        
-    }
-
-    /**
-     * Test toggle expanding block
-     * @param test1
-     * @param test2
-    */
-    //% subcategory="RTC"
-    //% blockId=kitronik_halo_hd_toggle_test
-    //% block="this is a test %test1|||%test2|some text"
-    //% expandableArgumentMode="toggle"
-    //% weight=25 blockGap=8
-    export function toggleTest(test1: string, test2?: number): void {
-        
-    }
+    
 } 

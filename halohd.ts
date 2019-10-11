@@ -27,6 +27,7 @@ enum ZipLedColors {
  * Kitronik ZIP Halo HD MakeCode Package
  */
 //% weight=100 color=#00A654 icon="\uf111" block="HaloHD"
+//% groups='["Set Time", "Set Date", "Read Time", "Read Date", "Alarm"]'
 namespace kitronik_halo_hd {
 
     ////////////////////////////////
@@ -139,7 +140,7 @@ namespace kitronik_halo_hd {
          * @param high maximum value, eg: 255
          */
         //% subcategory="ZIP LEDs"
-        //% weight=84
+        //% weight=84 blockGap=8
         //% blockId=kitronik_halo_hd_show_bar_graph block="%haloDisplay|show bar graph of %value|up to %high" 
         showBarGraph(value: number, high: number): void {
             if (high <= 0) {
@@ -176,7 +177,7 @@ namespace kitronik_halo_hd {
          * @param length number of LEDs in the range. eg: 4
          */
         //% subcategory="ZIP LEDs"
-        //% weight=89
+        //% weight=89 blockGap=8
         //% blockId="kitronik_halo_hd_range" block="%haloDisplay|range from %start|with %length|leds"
         range(start: number, length: number): ZIPHaloHd {
             start = start >> 0;
@@ -246,7 +247,7 @@ namespace kitronik_halo_hd {
          */
         //% subcategory="ZIP LEDs"
         //% blockId="kitronik_halo_hd_display_clear" block="%haloDisplay|clear"
-        //% weight=95
+        //% weight=95 blockGap=8
         
         clear(): void {
             const stride = this._mode === ZipLedMode.RGBW ? 4 : 3;
@@ -392,7 +393,7 @@ namespace kitronik_halo_hd {
      * @param blue value of the blue channel between 0 and 255. eg: 255
      */
     //% subcategory="ZIP LEDs"
-    //% weight=1
+    //% weight=1 blockGap=8
     //% blockId="kitronik_halo_hd_rgb" block="red %red|green %green|blue %blue"
     export function rgb(red: number, green: number, blue: number): number {
         return packRGB(red, green, blue);
@@ -525,12 +526,12 @@ namespace kitronik_halo_hd {
     * @param soundSpike_handler is function that is run once detection in sound 
     */
     //% subcategory="Microphone"
-    //% blockId=kitronik_halo_hd_wait_for_clap
+    //% blockId=kitronik_halo_hd_listen_for_clap
     //% block="listen for %claps claps within %timerperiod|ms"
     //% claps.min=1 claps.max=10
     //% timerperiod.min=500 timerperiod.max=2500
     //% weight=95 blockGap=8
-    export function waitForClap(claps: number, timerperiod: number, soundSpike_handler: Action): void {
+    export function listenForClap(claps: number, timerperiod: number, soundSpike_handler: Action): void {
         if (kitronik_microphone.initialised == false) {
             kitronik_microphone.init()
         }
@@ -557,13 +558,53 @@ namespace kitronik_halo_hd {
     //         RTC BLOCKS         //
     ////////////////////////////////
 
+    const HALO_HD_ALARM_ID = 5672   //The ID for the Halo HD alarm event bus
+
+    /**
+     * Alarm repeat type
+     */
+    export enum AlarmType {
+        //% block=Single
+        Single = 0,
+        //% block=Repeating
+        Repeating = 1
+    }
+
+    /**
+     * Alarm silence type
+     */
+    export enum AlarmSilence {
+        //% block="Auto Silence"
+        autoSilence = 1,
+        //% block="User Silence"
+        userSilence = 2
+    }
+
+    /**
+     * Halo HD Alarm Events
+     */
+    export enum AlarmEvents {
+        //% block="Alarm Triggered"
+        alarmTriggered = 1
+    }
+
+    let alarmHour = 0       //The hour setting for the alarm
+    let alarmMin = 0        //The minute setting for the alarm
+    export let alarmSetFlag = 0    //Flag set to '1' when an alarm is set
+    let alarmRepeat = 0     //If '1' shows that the alarm should remain set so it triggers at the next time match
+    let alarmOff = 0        //If '1' shows that alarm should auto switch off, if '2' the user must switch off 
+    let alarmTriggered = 0  //Flag to show if the alarm has been triggered ('1') or not ('0')
+    let alarmTriggerHandler: Action
+    let alarmHandler: Action
+
     /**
      * Set time on RTC, as three numbers
      * @param setHours is to set the hours
      * @param setMinutes is to set the minutes
      * @param setSeconds is to set the seconds
     */
-    //% subcategory="RTC"
+    //% subcategory="Clock"
+    //% group="Set Time"
     //% blockId=kitronik_halo_hd_set_time 
     //% block="Set Time to %setHours|hrs %setMinutes|mins %setSeconds|secs"
     //% setHours.min=0 setHours.max=23
@@ -601,7 +642,8 @@ namespace kitronik_halo_hd {
     /**
      * Read time from RTC as a string
     */
-    //% subcategory="RTC"
+    //% subcategory="Clock"
+    //% group="Read Time"
     //% blockId=kitronik_halo_hd_read_time 
     //% block="Read Time as String"
     //% weight=95 blockGap=8
@@ -630,7 +672,8 @@ namespace kitronik_halo_hd {
      * @param setMonths is to set the month in terms of numbers 1 to 12
      * @param setYears is to set the years in terms of numbers 0 to 99
     */
-    //% subcategory="RTC"
+    //% subcategory="Clock"
+    //% group="Set Date"
     //% blockId=kitronik_halo_hd_set_date 
     //% block="Set Date to %setDays|Day %setMonths|Month %setYear|Year"
     //% setDay.min=1 setDay.max=31
@@ -667,6 +710,9 @@ namespace kitronik_halo_hd {
                 setDay = 28
         }
 
+        let weekday = kitronik_RTC.calcWeekday(setDay, setMonth, (setYear+2000))
+        basic.showNumber(weekday)
+
         bcdDay = kitronik_RTC.decToBcd(setDay)                       //Convert number to binary coded decimal
         bcdMonths = kitronik_RTC.decToBcd(setMonth)                  //Convert number to binary coded decimal
         bcdYears = kitronik_RTC.decToBcd(setYear)                    //Convert number to binary coded decimal
@@ -679,6 +725,10 @@ namespace kitronik_halo_hd {
 
         writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
         writeBuf[1] = kitronik_RTC.STOP_RTC                                  //Disable Oscillator
+        pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
+
+        writeBuf[0] = kitronik_RTC.RTC_WEEKDAY_REG
+        writeBuf[1] = weekday                                        //Send new Weekday value
         pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
 
         writeBuf[0] = kitronik_RTC.RTC_DAY_REG
@@ -701,7 +751,8 @@ namespace kitronik_halo_hd {
     /**
      * Read date from RTC as a string
     */
-    //% subcategory="RTC"
+    //% subcategory="Clock"
+    //% group="Read Date"
     //% blockId=kitronik_halo_hd_read_date 
     //% block="Read Date as String"
     //% weight=85 blockGap=8
@@ -727,7 +778,8 @@ namespace kitronik_halo_hd {
      * Set the hours on the RTC in 24 hour format
      * @param writeHours is to set the hours in terms of numbers 0 to 23
     */
-    //% subcategory="RTC more..."
+    //% subcategory="Clock"
+    //% group="Set Time"
     //% blockId=kitronik_halo_hd_write_hours 
     //% block="Set Hours to %hours|hrs"
     //% hours.min=0 hours.max=23
@@ -752,7 +804,8 @@ namespace kitronik_halo_hd {
     }
 
     /**Read hours from RTC*/
-    //% subcategory="RTC more..."
+    //% subcategory="Clock"
+    //% group="Read Time"
     //% blockId=kitronik_halo_hd_read_hours 
     //% block="Read Hours as Number"
     //% weight=75 blockGap=8
@@ -773,7 +826,8 @@ namespace kitronik_halo_hd {
      * Set the minutes on the RTC
      * @param writeMinutes is to set the minutes in terms of numbers 0 to 59
     */
-    //% subcategory="RTC more..."
+    //% subcategory="Clock"
+    //% group="Set Time"
     //% blockId=kitronik_halo_hd_write_minutes 
     //% block="Set Minutes to %minutes|mins"
     //% minutes.min=0 minutes.max=59
@@ -798,7 +852,8 @@ namespace kitronik_halo_hd {
     }
 
     /**Read minutes from RTC*/
-    //% subcategory="RTC more..."
+    //% subcategory="Clock"
+    //% group="Read Time"
     //% blockId=kitronik_halo_hd_read_minutes 
     //% block="Read Minutes as Number"
     //% weight=65 blockGap=8
@@ -819,7 +874,8 @@ namespace kitronik_halo_hd {
      * Set the seconds on the RTC
      * @param writeSeconds is to set the seconds in terms of numbers 0 to 59
     */
-    //% subcategory="RTC more..."
+    //% subcategory="Clock"
+    //% group="Set Time"
     //% blockId=kitronik_halo_hd_write_seconds 
     //% block="Set Seconds to %seconds|secs"
     //% seconds.min=0 seconds.max=59
@@ -841,7 +897,8 @@ namespace kitronik_halo_hd {
     }
 
     /**Read seconds from RTC*/
-    //% subcategory="RTC more..."
+    //% subcategory="Clock"
+    //% group="Read Time"
     //% blockId=kitronik_halo_hd_read_seconds 
     //% block="Read Seconds as Number"
     //% weight=55 blockGap=8
@@ -864,7 +921,8 @@ namespace kitronik_halo_hd {
      * Set the day on the RTC
      * @param writeDay is to set the day in terms of numbers 0 to 31
     */
-    //% subcategory="RTC more..."
+    //% subcategory="Clock"
+    //% group="Set Date"
     //% blockId=kitronik_halo_hd_write_day
     //% block="Set Day to %day|day"
     //% day.min=1 day.max=31
@@ -889,7 +947,8 @@ namespace kitronik_halo_hd {
     }
 
     /**Read day from RTC*/
-    //% subcategory="RTC more..."
+    //% subcategory="Clock"
+    //% group="Read Date"
     //% blockId=kitronik_halo_hd_read_day 
     //% block="Read Day as Number"
     //% weight=45 blockGap=8
@@ -911,7 +970,8 @@ namespace kitronik_halo_hd {
      * set the month on the RTC
      * @param writeMonth is to set the month in terms of numbers 1 to 12
     */
-    //% subcategory="RTC more..."
+    //% subcategory="Clock"
+    //% group="Set Date"
     //% blockId=kitronik_halo_hd_write_month 
     //% block="Set Month to %month|month"
     //% month.min=1 month.max=12
@@ -936,7 +996,8 @@ namespace kitronik_halo_hd {
     }
 
     /**Read month from RTC*/
-    //% subcategory="RTC more..."
+    //% subcategory="Clock"
+    //% group="Read Date"
     //% blockId=kitronik_halo_hd_read_month 
     //% block="Read Month as Number"
     //% weight=35 blockGap=8
@@ -959,7 +1020,8 @@ namespace kitronik_halo_hd {
      * set the year on the RTC
      * @param writeYear is to set the year in terms of numbers 0 to 99
     */
-    //% subcategory="RTC more..."
+    //% subcategory="Clock"
+    //% group="Set Date"
     //% blockId=kitronik_halo_hd_write_year 
     //% block="Set Year to %year|year"
     //% year.min=0 year.max=99
@@ -984,7 +1046,8 @@ namespace kitronik_halo_hd {
     }
 
     /**Read year from RTC*/
-    //% subcategory="RTC more..."
+    //% subcategory="Clock"
+    //% group="Read Date"
     //% blockId=kitronik_halo_hd_read_year 
     //% block="Read Year as Number"
     //% weight=25 blockGap=8
@@ -1002,5 +1065,165 @@ namespace kitronik_halo_hd {
         return decYears
     }
 
-    
+    /**
+     * Set simple alarm (not inbuilt on RTC chip)
+     * @param alarmType determines whether the alarm repeats
+     * @param hour is the alarm hour setting (24 hour)
+     * @param min is the alarm minute setting
+     * @param alarmSilence determines whether the alarm turns off automatically or the user turns it off
+    */
+    //% subcategory="Clock"
+    //% group=Alarm
+    //% blockId=kitronik_halo_hd_simple_set_alarm 
+    //% block="set %alarmType|alarm to %hour|:%min|with %alarmSilence"
+    //% hour.min=0 hour.max=23
+    //% min.min=0 min.max=59
+    //% sec.min=0 sec.max=59
+    //% inlineInputMode=inline
+    //% weight=26 blockGap=8
+    export function simpleAlarmSet(alarmType: AlarmType, hour: number, min: number, alarmSilence: AlarmSilence): void {
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+
+        if (alarmType == 1) {
+            alarmRepeat = 1     //Daily Repeating Alarm
+        }
+        else {
+            alarmRepeat = 0     //Single Alarm
+        }
+
+        if (alarmSilence == 1) {    
+            alarmOff = 1                //Auto Silence
+        }
+        else if (alarmSilence == 2) {   
+            alarmOff = 2                //User Silence
+        }
+
+        alarmHour = hour
+        alarmMin = min
+
+        alarmSetFlag = 1
+
+        //Set background alarm trigger check running
+        control.inBackground(() => {
+            while (alarmSetFlag == 1) {
+                backgroundAlarmCheck()
+                basic.pause(1000)
+            }
+        })
+    }
+
+    //Function to check if an alarm is triggered and raises the trigger event if true
+    //Runs in background once an alarm is set, but only if alarmSetFlag = 1
+    function backgroundAlarmCheck(): void {
+        let checkHour = readHours()
+        let checkMin = readMinutes()
+        if (alarmTriggered == 1 && alarmRepeat == 1) {
+            if (checkMin != alarmMin) {
+                alarmSetFlag = 0
+                alarmTriggered = 0
+                //simpleAlarmSet(AlarmType.Repeating, alarmHour, alarmMin, alarmOff) //Reset the alarm after the current minute has changed
+                simpleAlarmSet(AlarmType.Repeating, 10, 23, AlarmSilence.userSilence)
+            }
+        }
+        if (checkHour == alarmHour && checkMin == alarmMin) {
+            alarmHandler()
+            //control.raiseEvent(HALO_HD_ALARM_ID, AlarmEvents.alarmTriggered)
+            alarmTriggered = 1
+            if (alarmOff == 1) {
+                basic.pause(2500)
+                alarmSetFlag = 0
+            }
+            //if (alarmRepeat == 1) {
+                //checkMin = readMinutes()
+                //control.inBackground(() => {
+                //    checkMin = readMinutes()
+                //    while (checkMin == alarmMin) {
+                //        basic.pause(50)
+                //        checkMin = readMinutes()
+                //    }
+                //    simpleAlarmSet(AlarmType.Repeating, alarmHour, alarmMin, alarmOff) //Reset the alarm after the current minute has changed
+                //})
+            //}
+        }
+    }
+
+    /**
+     * Do something if the alarm is triggered
+     */
+    ////% subcategory="Clock"
+    ////% group=Alarm
+    ////% blockId=kitronik_halo_hd_on_alarm block="on alarm trigger"
+    ////% weight=25 blockGap=8
+    //export function onAlarmTrigger(handler: () => void) {
+    //    control.onEvent(HALO_HD_ALARM_ID, AlarmEvents.alarmTriggered, handler)
+    //}
+
+    /**
+     * Do something if the alarm is triggered
+     */
+    //% subcategory="Clock"
+    //% group=Alarm
+    //% blockId=kitronik_halo_hd_on_alarm block="on alarm trigger"
+    //% weight=25 blockGap=8
+    export function onAlarmTrigger(alarmTriggerHandler: Action): void {
+        alarmHandler = alarmTriggerHandler
+        ////Set background alarm trigger check running
+        //control.inBackground(() => {
+        //    while (alarmSetFlag == 1) {
+        //        backgroundAlarmCheck()
+        //        basic.pause(100)
+        //    }
+        //})
+    }
+
+    /**
+     * Determine if the alarm is triggered and return a boolean
+    */
+    //% subcategory="Clock"
+    //% group=Alarm
+    //% blockId=kitronik_halo_hd_simple_check_alarm 
+    //% block="alarm triggered"
+    //% weight=24 blockGap=8
+    export function simpleAlarmCheck(): boolean {
+        let checkHour = readHours()
+        let checkMin = readMinutes()
+        if (alarmSetFlag == 1 && checkHour == alarmHour && checkMin == alarmMin) {
+            if (alarmOff == 1) {
+                control.inBackground(() => {
+                    basic.pause(2500)
+                    alarmSetFlag = 0
+                })
+            }
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
+    /**
+     * Turn off the alarm
+    */
+    //% subcategory="Clock"
+    //% group=Alarm
+    //% blockId=kitronik_halo_hd_alarm_off 
+    //% block="turn off alarm"
+    //% weight=23 blockGap=8
+    export function simpleAlarmOff(): void {
+        alarmSetFlag = 0
+        if (alarmTriggered == 1 && alarmRepeat == 1) {
+            control.inBackground(() => {
+                let checkMin = readMinutes()
+                while (checkMin == alarmMin) {
+                    basic.pause(1000)
+                    checkMin = readMinutes()
+                }
+                alarmTriggered = 0
+                //simpleAlarmSet(AlarmType.Repeating, alarmHour, alarmMin, alarmOff) //Reset the alarm after the current minute has changed
+                simpleAlarmSet(AlarmType.Repeating, 10, 23, AlarmSilence.userSilence)
+            })
+        }
+    }    
 } 

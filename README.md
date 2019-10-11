@@ -1,3 +1,5 @@
+# BETA - TESTING ON THIS EXTENSION IS NOT COMPLETE
+
 # pxt-kitronik-halohd
 
 # Kitronik blocks for micro:bit

@@ -558,15 +558,13 @@ namespace kitronik_halo_hd {
     //         RTC BLOCKS         //
     ////////////////////////////////
 
-    const HALO_HD_ALARM_ID = 5672   //The ID for the Halo HD alarm event bus
-
     /**
      * Alarm repeat type
      */
     export enum AlarmType {
-        //% block=Single
+        //% block="Single"
         Single = 0,
-        //% block=Repeating
+        //% block="Daily Repeating"
         Repeating = 1
     }
 
@@ -578,14 +576,6 @@ namespace kitronik_halo_hd {
         autoSilence = 1,
         //% block="User Silence"
         userSilence = 2
-    }
-
-    /**
-     * Halo HD Alarm Events
-     */
-    export enum AlarmEvents {
-        //% block="Alarm Triggered"
-        alarmTriggered = 1
     }
 
     let alarmHour = 0       //The hour setting for the alarm
@@ -1123,42 +1113,33 @@ namespace kitronik_halo_hd {
             if (checkMin != alarmMin) {
                 alarmSetFlag = 0
                 alarmTriggered = 0
-                //simpleAlarmSet(AlarmType.Repeating, alarmHour, alarmMin, alarmOff) //Reset the alarm after the current minute has changed
-                simpleAlarmSet(AlarmType.Repeating, 10, 23, AlarmSilence.userSilence)
+                simpleAlarmSet(AlarmType.Repeating, alarmHour, alarmMin, alarmOff) //Reset the alarm after the current minute has changed
             }
         }
         if (checkHour == alarmHour && checkMin == alarmMin) {
             alarmHandler()
-            //control.raiseEvent(HALO_HD_ALARM_ID, AlarmEvents.alarmTriggered)
             alarmTriggered = 1
             if (alarmOff == 1) {
                 basic.pause(2500)
                 alarmSetFlag = 0
+                if (alarmRepeat == 1) {
+                    control.inBackground(() => {
+                        checkMin = readMinutes()
+                        while (checkMin == alarmMin) {
+                            basic.pause(1000)
+                            checkMin = readMinutes()
+                        }
+                        alarmTriggered = 0
+                        simpleAlarmSet(AlarmType.Repeating, alarmHour, alarmMin, alarmOff) //Reset the alarm after the current minute has changed
+                    })
+                }
             }
-            //if (alarmRepeat == 1) {
-                //checkMin = readMinutes()
-                //control.inBackground(() => {
-                //    checkMin = readMinutes()
-                //    while (checkMin == alarmMin) {
-                //        basic.pause(50)
-                //        checkMin = readMinutes()
-                //    }
-                //    simpleAlarmSet(AlarmType.Repeating, alarmHour, alarmMin, alarmOff) //Reset the alarm after the current minute has changed
-                //})
-            //}
+        }
+        if (alarmTriggered == 1 && alarmOff == 2 && checkMin != alarmMin) {
+            alarmSetFlag = 0
+            alarmTriggered = 0
         }
     }
-
-    /**
-     * Do something if the alarm is triggered
-     */
-    ////% subcategory="Clock"
-    ////% group=Alarm
-    ////% blockId=kitronik_halo_hd_on_alarm block="on alarm trigger"
-    ////% weight=25 blockGap=8
-    //export function onAlarmTrigger(handler: () => void) {
-    //    control.onEvent(HALO_HD_ALARM_ID, AlarmEvents.alarmTriggered, handler)
-    //}
 
     /**
      * Do something if the alarm is triggered
@@ -1169,13 +1150,6 @@ namespace kitronik_halo_hd {
     //% weight=25 blockGap=8
     export function onAlarmTrigger(alarmTriggerHandler: Action): void {
         alarmHandler = alarmTriggerHandler
-        ////Set background alarm trigger check running
-        //control.inBackground(() => {
-        //    while (alarmSetFlag == 1) {
-        //        backgroundAlarmCheck()
-        //        basic.pause(100)
-        //    }
-        //})
     }
 
     /**
@@ -1221,8 +1195,7 @@ namespace kitronik_halo_hd {
                     checkMin = readMinutes()
                 }
                 alarmTriggered = 0
-                //simpleAlarmSet(AlarmType.Repeating, alarmHour, alarmMin, alarmOff) //Reset the alarm after the current minute has changed
-                simpleAlarmSet(AlarmType.Repeating, 10, 23, AlarmSilence.userSilence)
+                simpleAlarmSet(AlarmType.Repeating, alarmHour, alarmMin, alarmOff) //Reset the alarm after the current minute has changed
             })
         }
     }    

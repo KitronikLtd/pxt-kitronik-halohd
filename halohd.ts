@@ -876,7 +876,7 @@ namespace kitronik_halo_hd {
 		if (zipHours > 12){
 			zipHours = zipHours - 12
 		}
-		zipHours = zipHouse * 5
+		zipHours = zipHours * 5
         return zipHours
     }
 

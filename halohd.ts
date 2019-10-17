@@ -522,21 +522,21 @@ namespace kitronik_halo_hd {
     /**
     * Performs an action when a spike in sound
     * @param claps is the number of claps to listen out for before running the function eg: 1
-    * @param timerperiod is period of time in which to listen for the claps or spikes eg: 1000
+    * @param timerperiod is period of time in which to listen for the claps or spikes eg: 1
     * @param soundSpike_handler is function that is run once detection in sound 
     */
     //% subcategory="Microphone"
     //% blockId=kitronik_halo_hd_listen_for_clap
-    //% block="listen for %claps claps within %timerperiod|ms"
+    //% block="listen for %claps claps within %timerperiod|seconds"
     //% claps.min=1 claps.max=10
-    //% timerperiod.min=500 timerperiod.max=2500
+    //% timerperiod.min=1 timerperiod.max=10
     //% weight=95 blockGap=8
     export function listenForClap(claps: number, timerperiod: number, soundSpike_handler: Action): void {
         if (kitronik_microphone.initialised == false) {
             kitronik_microphone.init()
         }
         kitronik_microphone.numberOfClaps = claps
-        kitronik_microphone.period = timerperiod
+        kitronik_microphone.period = (timerperiod * 1000)
         kitronik_microphone.sound_handler = soundSpike_handler
         kitronik_microphone.startClapListening()
     }

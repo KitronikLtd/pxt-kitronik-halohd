@@ -859,6 +859,26 @@ namespace kitronik_halo_hd {
         let decMinutes = kitronik_RTC.bcdToDec(kitronik_RTC.currentMinutes, kitronik_RTC.RTC_MINUTES_REG)                  //Convert number to Decimal
         return decMinutes
     }
+	
+	/**Read hours from RTC for ZIP display*/
+    //% subcategory="Clock"
+    //% group="Read Time"
+    //% blockId=kitronik_halo_hd_read_hours_for_zip_display 
+    //% block="Read Hours for ZIP display"
+    //% weight=75 blockGap=8
+    export function readHoursForZip(): number {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+
+        let zipHours = kitronik_RTC.readHours()                    //use same read hour code to get hours from RTC
+		if (zipHours > 12){
+			zipHours = zipHours - 12
+		}
+		zipHours = zipHouse * 5
+        return zipHours
+    }
 
     /**
      * Set the seconds on the RTC

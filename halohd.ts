@@ -872,7 +872,8 @@ namespace kitronik_halo_hd {
             kitronik_RTC.secretIncantation()
         }
 
-        let zipHours = kitronik_RTC.readHours()                    //use same read hour code to get hours from RTC
+        //let zipHours = kitronik_RTC.readHours()                    //use same read hour code to get hours from RTC
+		let zipHours = readHours()                    //use same read hour code to get hours from RTC
 		if (zipHours > 12){
 			zipHours = zipHours - 12
 		}

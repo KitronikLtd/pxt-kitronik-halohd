@@ -504,7 +504,7 @@ namespace kitronik_halo_hd {
         if (kitronik_microphone.initialised == false) {
             kitronik_microphone.init()
         }
-        let read = pins.analogReadPin(kitronik_microphone.microphonePin)
+        let read = (pins.analogReadPin(kitronik_microphone.microphonePin) - 520)
         return read
     }
 

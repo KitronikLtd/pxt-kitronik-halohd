@@ -23,6 +23,25 @@ enum ZipLedColors {
     //% block=black
     Black = 0x000000
 }
+
+enum TimeParameter {
+    //% block=hours
+    Hours,
+    //% block=minutes
+    Minutes,
+    //% block=seconds
+    Seconds
+}
+
+enum DateParameter {
+    //% block=day
+    Day,
+    //% block=month
+    Month,
+    //% block=year
+    Year
+}
+
 /**
  * Kitronik ZIP Halo HD MakeCode Package
  */
@@ -495,7 +514,7 @@ namespace kitronik_halo_hd {
     //% subcategory="Microphone"
     //% blockId=kitronik_halo_hd_read_average_sound_level
     //% block="read average sound level"
-    //% weight=100 blockGap=8
+    //% weight=95 blockGap=8
     export function readAverageSoundLevel() {
         let x = 0
         let soundlevel = 0
@@ -530,7 +549,7 @@ namespace kitronik_halo_hd {
     //% block="listen for %claps claps within %timerperiod|seconds"
     //% claps.min=1 claps.max=10
     //% timerperiod.min=1 timerperiod.max=10
-    //% weight=95 blockGap=8
+    //% weight=90 blockGap=8
     export function listenForClap(claps: number, timerperiod: number, soundSpike_handler: Action): void {
         if (kitronik_microphone.initialised == false) {
             kitronik_microphone.init()
@@ -549,6 +568,7 @@ namespace kitronik_halo_hd {
     //% blockId=kitronik_halo_hd_set_mic_sensitivity
     //% block="Set mic sensitivity to %value"
     //% value.min=0 value.max=100 value.defl=80
+	//% weight=85 blockGap=8
     export function setClapSensitivity(value: number): void {
         value = Math.clamp(0, 100, value)
         kitronik_microphone.threshold = kitronik_microphone.baseVoltageLevel + (105 - value)
@@ -763,7 +783,67 @@ namespace kitronik_halo_hd {
         let strDate: string = "" + ((decDay / 10)>>0) + (decDay % 10) + "/" + ((decMonths / 10)>>0) + (decMonths % 10) + "/" + ((decYears / 10)>>0) + (decYears % 10)
         return strDate
     }
+	
+    /**Read time parameter from RTC*/
+    //% subcategory="Clock"
+    //% group="Read Time"
+    //% blockId=kitronik_halo_hd_read_time_parameter 
+    //% block="Read %selectParameter| as Number"
+    //% weight=75 blockGap=8
+    export function readTimeParameter(selectParameter: TimeParameter): number {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+        let decParameter = 0
+        //read Values
+        kitronik_RTC.readValue()
+		
+		//from enum convert the required time parameter and return
+		if (selectParameter == TimeParameter.Hours){
+			decParameter = kitronik_RTC.bcdToDec(kitronik_RTC.currentHours, kitronik_RTC.RTC_HOURS_REG)                   //Convert number to Decimal
+		}
+		else if (selectParameter == TimeParameter.Minutes){
+			decParameter = kitronik_RTC.bcdToDec(kitronik_RTC.currentMinutes, kitronik_RTC.RTC_MINUTES_REG)                  //Convert number to Decimal
+		}
+		else if (selectParameter == TimeParameter.Seconds){
+			decParameter = kitronik_RTC.bcdToDec(kitronik_RTC.currentSeconds, kitronik_RTC.RTC_SECONDS_REG)                  //Convert number to Decimal
+		}
+        
+        return decParameter
+    }
+	
+	/**Read time parameter from RTC for ZIP display*/
+    //% subcategory="Clock"
+    //% group="Read Time"
+    //% blockId=kitronik_halo_hd_read_time_parameter_for_zip_display 
+    //% block="Read %selectParameter| for ZIP display"
+    //% weight=65 blockGap=8
+    export function readTimeForZip(selectParameter: TimeParameter): number {
+        
+        if (kitronik_RTC.initalised == false) {
+            kitronik_RTC.secretIncantation()
+        }
+		
+		let zipTimeParameter = 0
+		
+		if (selectParameter == TimeParameter.Hours){
+			zipTimeParameter = readTimeParameter(TimeParameter.Hours)                    //use same read hour code to get hours from RTC
+			if (zipTimeParameter > 12){
+				zipTimeParameter = zipTimeParameter - 12
+			}
+			zipTimeParameter = zipTimeParameter * 5
+		}
+		else if (selectParameter == TimeParameter.Minutes){
+			zipTimeParameter = readTimeParameter(TimeParameter.Minutes)
+		}
+		else if (selectParameter == TimeParameter.Seconds){
+			zipTimeParameter = readTimeParameter(TimeParameter.Seconds)
+		}
 
+        return zipTimeParameter
+    }
+	
     /**
      * Set the hours on the RTC in 24 hour format
      * @param writeHours is to set the hours in terms of numbers 0 to 23
@@ -791,25 +871,6 @@ namespace kitronik_halo_hd {
         writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
         writeBuf[1] = kitronik_RTC.START_RTC                                 //Enable Oscillator
         pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
-    }
-
-    /**Read hours from RTC*/
-    //% subcategory="Clock"
-    //% group="Read Time"
-    //% blockId=kitronik_halo_hd_read_hours 
-    //% block="Read Hours as Number"
-    //% weight=75 blockGap=8
-    export function readHours(): number {
-        
-        if (kitronik_RTC.initalised == false) {
-            kitronik_RTC.secretIncantation()
-        }
-        
-        //read Values
-        kitronik_RTC.readValue()
-
-        let decHours = kitronik_RTC.bcdToDec(kitronik_RTC.currentHours, kitronik_RTC.RTC_HOURS_REG)                    //Convert number to Decimal
-        return decHours
     }
 
     /**
@@ -841,46 +902,6 @@ namespace kitronik_halo_hd {
         pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
     }
 
-    /**Read minutes from RTC*/
-    //% subcategory="Clock"
-    //% group="Read Time"
-    //% blockId=kitronik_halo_hd_read_minutes 
-    //% block="Read Minutes as Number"
-    //% weight=65 blockGap=8
-    export function readMinutes(): number {
-        
-        if (kitronik_RTC.initalised == false) {
-            kitronik_RTC.secretIncantation()
-        }
-        
-        //read Values
-        kitronik_RTC.readValue()
-
-        let decMinutes = kitronik_RTC.bcdToDec(kitronik_RTC.currentMinutes, kitronik_RTC.RTC_MINUTES_REG)                  //Convert number to Decimal
-        return decMinutes
-    }
-	
-	/**Read hours from RTC for ZIP display*/
-    //% subcategory="Clock"
-    //% group="Read Time"
-    //% blockId=kitronik_halo_hd_read_hours_for_zip_display 
-    //% block="Read Hours for ZIP display"
-    //% weight=75 blockGap=8
-    export function readHoursForZip(): number {
-        
-        if (kitronik_RTC.initalised == false) {
-            kitronik_RTC.secretIncantation()
-        }
-
-        //let zipHours = kitronik_RTC.readHours()                    //use same read hour code to get hours from RTC
-		let zipHours = readHours()                    //use same read hour code to get hours from RTC
-		if (zipHours > 12){
-			zipHours = zipHours - 12
-		}
-		zipHours = zipHours * 5
-        return zipHours
-    }
-
     /**
      * Set the seconds on the RTC
      * @param writeSeconds is to set the seconds in terms of numbers 0 to 59
@@ -907,27 +928,35 @@ namespace kitronik_halo_hd {
         pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
     }
 
-    /**Read seconds from RTC*/
+    /**Read time parameter from RTC*/
     //% subcategory="Clock"
-    //% group="Read Time"
-    //% blockId=kitronik_halo_hd_read_seconds 
-    //% block="Read Seconds as Number"
-    //% weight=55 blockGap=8
-    export function readSeconds(): number {
+    //% group="Read Date"
+    //% blockId=kitronik_halo_hd_read_date_parameter 
+    //% block="Read %selectParameter| as Number"
+    //% weight=65 blockGap=8
+    export function readDateParameter(selectParameter: DateParameter): number {
         
         if (kitronik_RTC.initalised == false) {
             kitronik_RTC.secretIncantation()
         }
-        
+        let decParameter = 0
         //read Values
         kitronik_RTC.readValue()
-
-        let decSeconds = kitronik_RTC.bcdToDec(kitronik_RTC.currentSeconds, kitronik_RTC.RTC_SECONDS_REG)                  //Convert number to Decimal
-
-        return decSeconds
+		
+		//from enum convert the required time parameter and return
+		if (selectParameter == DateParameter.Day){
+			decParameter = kitronik_RTC.bcdToDec(kitronik_RTC.currentDay, kitronik_RTC.RTC_DAY_REG)                   //Convert number to Decimal
+		}
+		else if (selectParameter == DateParameter.Month){
+			decParameter = kitronik_RTC.bcdToDec(kitronik_RTC.currentMonth, kitronik_RTC.RTC_MONTH_REG)                  //Convert number to Decimal
+		}
+		else if (selectParameter == DateParameter.Year){
+			decParameter = kitronik_RTC.bcdToDec(kitronik_RTC.currentYear, kitronik_RTC.RTC_YEAR_REG)                   //Convert number to Decimal
+		}
+        
+        return decParameter
     }
-
-
+	
     /**
      * Set the day on the RTC
      * @param writeDay is to set the day in terms of numbers 0 to 31
@@ -955,26 +984,6 @@ namespace kitronik_halo_hd {
         writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
         writeBuf[1] = kitronik_RTC.START_RTC                         //Enable Oscillator
         pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
-    }
-
-    /**Read day from RTC*/
-    //% subcategory="Clock"
-    //% group="Read Date"
-    //% blockId=kitronik_halo_hd_read_day 
-    //% block="Read Day as Number"
-    //% weight=45 blockGap=8
-    export function readDay(): number {
-        
-        if (kitronik_RTC.initalised == false) {
-            kitronik_RTC.secretIncantation()
-        }
-        
-        //read Values
-        kitronik_RTC.readValue()
-
-        let decDay = kitronik_RTC.bcdToDec(kitronik_RTC.currentDay, kitronik_RTC.RTC_DAY_REG)                  //Convert number to Decimal
-
-        return decDay
     }
 
     /**
@@ -1006,27 +1015,6 @@ namespace kitronik_halo_hd {
         pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
     }
 
-    /**Read month from RTC*/
-    //% subcategory="Clock"
-    //% group="Read Date"
-    //% blockId=kitronik_halo_hd_read_month 
-    //% block="Read Month as Number"
-    //% weight=35 blockGap=8
-    export function readMonth(): number {
-        
-        if (kitronik_RTC.initalised == false) {
-            kitronik_RTC.secretIncantation()
-        }
-        
-        //read Values
-        kitronik_RTC.readValue()
-
-        //pins.i2cReadBuffer(kitronik_RTC.CHIP_ADDRESS, buf, false)
-        let decMonths = kitronik_RTC.bcdToDec(kitronik_RTC.currentMonth, kitronik_RTC.RTC_MONTH_REG)                   //Convert number to Decimal
-
-        return decMonths
-    }
-
     /**
      * set the year on the RTC
      * @param writeYear is to set the year in terms of numbers 0 to 99
@@ -1054,26 +1042,6 @@ namespace kitronik_halo_hd {
         writeBuf[0] = kitronik_RTC.RTC_SECONDS_REG
         writeBuf[1] = kitronik_RTC.START_RTC                                 //Enable Oscillator
         pins.i2cWriteBuffer(kitronik_RTC.CHIP_ADDRESS, writeBuf, false)
-    }
-
-    /**Read year from RTC*/
-    //% subcategory="Clock"
-    //% group="Read Date"
-    //% blockId=kitronik_halo_hd_read_year 
-    //% block="Read Year as Number"
-    //% weight=25 blockGap=8
-    export function readYear(): number {
-        
-        if (kitronik_RTC.initalised == false) {
-            kitronik_RTC.secretIncantation()
-        }
-        
-        //read Values
-        kitronik_RTC.readValue()
-
-        let decYears = kitronik_RTC.bcdToDec(kitronik_RTC.currentYear, kitronik_RTC.RTC_YEAR_REG)                  //Convert number to Decimal
-
-        return decYears
     }
 
     /**
@@ -1128,8 +1096,8 @@ namespace kitronik_halo_hd {
     //Function to check if an alarm is triggered and raises the trigger event if true
     //Runs in background once an alarm is set, but only if alarmSetFlag = 1
     function backgroundAlarmCheck(): void {
-        let checkHour = readHours()
-        let checkMin = readMinutes()
+		let checkHour = readTimeParameter(TimeParameter.Hours)
+        let checkMin = readTimeParameter(TimeParameter.Minutes)
         if (alarmTriggered == 1 && alarmRepeat == 1) {
             if (checkMin != alarmMin) {
                 alarmSetFlag = 0
@@ -1145,10 +1113,10 @@ namespace kitronik_halo_hd {
                 alarmSetFlag = 0
                 if (alarmRepeat == 1) {
                     control.inBackground(() => {
-                        checkMin = readMinutes()
+                        checkMin = readTimeParameter(TimeParameter.Minutes)
                         while (checkMin == alarmMin) {
                             basic.pause(1000)
-                            checkMin = readMinutes()
+                            checkMin = readTimeParameter(TimeParameter.Minutes)
                         }
                         alarmTriggered = 0
                         simpleAlarmSet(AlarmType.Repeating, alarmHour, alarmMin, alarmOff) //Reset the alarm after the current minute has changed
@@ -1182,8 +1150,8 @@ namespace kitronik_halo_hd {
     //% block="alarm triggered"
     //% weight=24 blockGap=8
     export function simpleAlarmCheck(): boolean {
-        let checkHour = readHours()
-        let checkMin = readMinutes()
+        let checkHour = readTimeParameter(TimeParameter.Hours)
+        let checkMin = readTimeParameter(TimeParameter.Minutes)
         if (alarmSetFlag == 1 && checkHour == alarmHour && checkMin == alarmMin) {
             if (alarmOff == 1) {
                 control.inBackground(() => {
@@ -1210,10 +1178,10 @@ namespace kitronik_halo_hd {
         alarmSetFlag = 0
         if (alarmTriggered == 1 && alarmRepeat == 1) {
             control.inBackground(() => {
-                let checkMin = readMinutes()
+                let checkMin = readTimeParameter(TimeParameter.Minutes)
                 while (checkMin == alarmMin) {
                     basic.pause(1000)
-                    checkMin = readMinutes()
+                    checkMin = readTimeParameter(TimeParameter.Minutes)
                 }
                 alarmTriggered = 0
                 simpleAlarmSet(AlarmType.Repeating, alarmHour, alarmMin, alarmOff) //Reset the alarm after the current minute has changed

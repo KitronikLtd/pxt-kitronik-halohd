@@ -1,46 +1,46 @@
-/**
- * Well known colors for ZIP LEDs
- */
-enum ZipLedColors {
-    //% block=red
-    Red = 0xFF0000,
-    //% block=orange
-    Orange = 0xFFA500,
-    //% block=yellow
-    Yellow = 0xFFFF00,
-    //% block=green
-    Green = 0x00FF00,
-    //% block=blue
-    Blue = 0x0000FF,
-    //% block=indigo
-    Indigo = 0x4b0082,
-    //% block=violet
-    Violet = 0x8a2be2,
-    //% block=purple
-    Purple = 0xFF00FF,
-    //% block=white
-    White = 0xFFFFFF,
-    //% block=black
-    Black = 0x000000
-}
+	/**
+	* Well known colors for ZIP LEDs
+	*/
+	enum ZipLedColors {
+		//% block=red
+		Red = 0xFF0000,
+		//% block=orange
+		Orange = 0xFFA500,
+		//% block=yellow
+		Yellow = 0xFFFF00,
+		//% block=green
+		Green = 0x00FF00,
+		//% block=blue
+		Blue = 0x0000FF,
+		//% block=indigo
+		Indigo = 0x4b0082,
+		//% block=violet
+		Violet = 0x8a2be2,
+		//% block=purple
+		Purple = 0xFF00FF,
+		//% block=white
+		White = 0xFFFFFF,
+		//% block=black
+		Black = 0x000000
+	}
 
-enum TimeParameter {
-    //% block=hours
-    Hours,
-    //% block=minutes
-    Minutes,
-    //% block=seconds
-    Seconds
-}
+	enum TimeParameter {
+		//% block=hours
+		Hours,
+		//% block=minutes
+		Minutes,
+		//% block=seconds
+		Seconds
+	}
 
-enum DateParameter {
-    //% block=day
-    Day,
-    //% block=month
-    Month,
-    //% block=year
-    Year
-}
+	enum DateParameter {
+		//% block=day
+		Day,
+		//% block=month
+		Month,
+		//% block=year
+		Year
+	}
 
 /**
  * Kitronik ZIP Halo HD MakeCode Package
@@ -65,7 +65,7 @@ namespace kitronik_halo_hd {
 	////////////////////////////////
     //          ZIP LEDS          //
     ////////////////////////////////
-	
+
 	/**
 	 * Different modes for RGB or RGB+W ZIP strips
 	 */
@@ -577,7 +577,7 @@ namespace kitronik_halo_hd {
     ////////////////////////////////
     //         RTC BLOCKS         //
     ////////////////////////////////
-
+	
     /**
      * Alarm repeat type
      */

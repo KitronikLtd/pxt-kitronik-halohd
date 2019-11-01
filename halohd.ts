@@ -721,8 +721,7 @@ namespace kitronik_halo_hd {
         }
 
         let weekday = kitronik_RTC.calcWeekday(setDay, setMonth, (setYear+2000))
-        basic.showNumber(weekday)
-
+        
         bcdDay = kitronik_RTC.decToBcd(setDay)                       //Convert number to binary coded decimal
         bcdMonths = kitronik_RTC.decToBcd(setMonth)                  //Convert number to binary coded decimal
         bcdYears = kitronik_RTC.decToBcd(setYear)                    //Convert number to binary coded decimal

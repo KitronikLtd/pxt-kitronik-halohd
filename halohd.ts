@@ -828,7 +828,7 @@ namespace kitronik_halo_hd {
 		
 		if (selectParameter == TimeParameter.Hours){
 			zipTimeParameter = readTimeParameter(TimeParameter.Hours)                    //use same read hour code to get hours from RTC
-			if (zipTimeParameter > 12){
+			if (zipTimeParameter >= 12){
 				zipTimeParameter = zipTimeParameter - 12
 			}
 			zipTimeParameter = zipTimeParameter * 5

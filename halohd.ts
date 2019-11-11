@@ -406,7 +406,29 @@ namespace kitronik_halo_hd {
     }
 
     /**
-     * Converts red, green, blue channels into a RGB color
+     * Converts wavelength value to red, green, blue channels and show on ZIPs
+     * @param wavelength value between 400 and 700. eg: 470
+     */
+    //% subcategory="ZIP LEDs"
+    //% weight=1 blockGap=8
+    //% blockId="kitronik_halo_hd_wavelength" block="wavelength %wavelength|nm"
+    export function wavelength(wavelength: number): number {
+		let r = 0;
+		let g = 0;
+		let b = 0;
+		if ((wavelength >= 470) && (wavelength < 525)){
+			g = pins.map(wavelength,470,525,0,255);
+			b = pins.map(wavelength,470,525,255,0);
+		}
+		else if ((wavelength >= 525) && (wavelength <= 625)){
+			r = pins.map(wavelength,525,625,0,255);
+			g = pins.map(wavelength,525,625,255,0);
+		}
+        return packRGB(r, g, b);
+    }
+
+    /**
+     * Converts value to red, green, blue channels
      * @param red value of the red channel between 0 and 255. eg: 255
      * @param green value of the green channel between 0 and 255. eg: 255
      * @param blue value of the blue channel between 0 and 255. eg: 255

@@ -257,7 +257,7 @@ namespace kitronik_halo_hd {
         //% blockId="kitronik_halo_hd_display_show" block="%haloDisplay|show" blockGap=8
         //% weight=96
         show() {
-            ws2812b.sendBuffer(this.buf, this.pin);
+            ws2812b.sendBuffer(this.buf, this.pin, this.brightness);
         }
 
         /**

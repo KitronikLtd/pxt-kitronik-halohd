@@ -1,7 +1,7 @@
 {
     "name": "pxt-kitronik-halohd",
     "version": "0.0.35",
-    "description": "Hope Phil doesnt notice",
+    "description": "Phil will definitely notice",
     "license": "MIT",
     "dependencies": {
         "core": "*",

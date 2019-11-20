@@ -1,6 +1,6 @@
 {
     "name": "pxt-kitronik-halohd",
-    "version": "0.0.37",
+    "version": "0.0.38",
     "description": "Nearly Hardhat free",
     "license": "MIT",
     "dependencies": {

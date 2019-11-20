@@ -271,7 +271,7 @@ namespace kitronik_halo_hd {
             {
               brightness = 0
             }
-            else if brightness > 255)
+            else if (brightness > 255)
             {
               brightness = 255
             }

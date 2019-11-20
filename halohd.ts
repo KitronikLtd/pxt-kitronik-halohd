@@ -66,25 +66,12 @@ namespace kitronik_halo_hd {
     //          ZIP LEDS          //
     ////////////////////////////////
 
-	/**
-	 * Different modes for RGB or RGB+W ZIP strips
-	 */
-	export enum ZipLedMode {
-	    //% block="RGB (GRB format)"
-	    RGB = 0,
-	    //% block="RGB+W"
-	    RGBW = 1,
-	    //% block="RGB (RGB format)"
-	    RGB_RGB = 2
-	}
-
     export class ZIPHaloHd {
     	buf: Buffer;
     	pin: DigitalPin;
     	brightness: number;
     	start: number;
     	_length: number;
-    	_mode: ZipLedMode;
 
 
         /**
@@ -207,7 +194,6 @@ namespace kitronik_halo_hd {
             haloDisplay.brightness = this.brightness;
             haloDisplay.start = this.start + Math.clamp(0, this._length - 1, start);
             haloDisplay._length = Math.clamp(0, this._length - (haloDisplay.start - this.start), length);
-            haloDisplay._mode = this._mode;
             return haloDisplay;
         }
 		
@@ -220,8 +206,7 @@ namespace kitronik_halo_hd {
         //% blockId="kitronik_halo_hd_display_rotate" block="%haloDisplay|rotate ZIP LEDs by %offset" blockGap=8
         //% weight=93
         rotate(offset: number = 1): void {
-            const stride = this._mode === ZipLedMode.RGBW ? 4 : 3;
-            this.buf.rotate(-offset * stride, this.start * stride, this._length * stride)
+            this.buf.rotate(-offset * 3, this.start * 3, this._length * 3)
         }
 
     	/**
@@ -269,8 +254,7 @@ namespace kitronik_halo_hd {
         //% weight=95 blockGap=8
         
         clear(): void {
-            const stride = this._mode === ZipLedMode.RGBW ? 4 : 3;
-            this.buf.fill(0, this.start * stride, this._length * stride);
+            this.buf.fill(0, this.start * 3, this._length * 3);
         }
 
         /**
@@ -301,14 +285,8 @@ namespace kitronik_halo_hd {
         }
 
         private setBufferRGB(offset: number, red: number, green: number, blue: number): void {
-			
-            if (this._mode === ZipLedMode.RGB_RGB) {
-                this.buf[offset + 0] = red;
-                this.buf[offset + 1] = green;
-            } else {
-                this.buf[offset + 0] = green;
-                this.buf[offset + 1] = red;
-            }
+            this.buf[offset + 0] = green;
+            this.buf[offset + 1] = red;
             this.buf[offset + 2] = blue;
         }
 
@@ -318,31 +296,9 @@ namespace kitronik_halo_hd {
             let green = unpackG(rgb);
             let blue = unpackB(rgb);
 
-            const br = this.brightness;
-            if (br < 255) {
-                red = (red * br) >> 8;
-                green = (green * br) >> 8;
-                blue = (blue * br) >> 8;
-            }
             const end = this.start + this._length;
-            const stride = this._mode === ZipLedMode.RGBW ? 4 : 3;
             for (let i = this.start; i < end; ++i) {
-                this.setBufferRGB(i * stride, red, green, blue)
-            }
-        }
-        private setAllW(white: number) {
-            if (this._mode !== ZipLedMode.RGBW)
-                return;
-
-            let br = this.brightness;
-            if (br < 255) {
-                white = (white * br) >> 8;
-            }
-            let buf = this.buf;
-            let end = this.start + this._length;
-            for (let i = this.start; i < end; ++i) {
-                let ledoffset = i * 4;
-                buf[ledoffset + 3] = white;
+                this.setBufferRGB(i * 3, red, green, blue)
             }
         }
         private setPixelRGB(pixeloffset: number, rgb: number): void {
@@ -350,37 +306,13 @@ namespace kitronik_halo_hd {
                 || pixeloffset >= this._length)
                 return;
 
-            let stride = this._mode === ZipLedMode.RGBW ? 4 : 3;
-            pixeloffset = (pixeloffset + this.start) * stride;
+            pixeloffset = (pixeloffset + this.start) * 3;
 
             let red = unpackR(rgb);
             let green = unpackG(rgb);
             let blue = unpackB(rgb);
 
-            let br = this.brightness;
-            if (br < 255) {
-                red = (red * br) >> 8;
-                green = (green * br) >> 8;
-                blue = (blue * br) >> 8;
-            }
             this.setBufferRGB(pixeloffset, red, green, blue)
-        }
-        private setPixelW(pixeloffset: number, white: number): void {
-            if (this._mode !== ZipLedMode.RGBW)
-                return;
-
-            if (pixeloffset < 0
-                || pixeloffset >= this._length)
-                return;
-
-            pixeloffset = (pixeloffset + this.start) * 4;
-
-            let br = this.brightness;
-            if (br < 255) {
-                white = (white * br) >> 8;
-            }
-            let buf = this.buf;
-            buf[pixeloffset + 3] = white;
         }
     }
 
@@ -395,11 +327,9 @@ namespace kitronik_halo_hd {
     //% blockSetVariable=haloDisplay
     export function createZIPHaloDisplay(numZips: number): ZIPHaloHd {
         let haloDisplay = new ZIPHaloHd();
-        let stride = 0 === ZipLedMode.RGBW ? 4 : 3;
-        haloDisplay.buf = pins.createBuffer(numZips * stride);
+        haloDisplay.buf = pins.createBuffer(numZips * 3);
         haloDisplay.start = 0;
         haloDisplay._length = numZips;
-        haloDisplay._mode = 0;
         haloDisplay.setBrightness(128)
         haloDisplay.setPin(DigitalPin.P8)
         return haloDisplay;

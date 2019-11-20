@@ -125,16 +125,16 @@ namespace kitronik_halo_hd {
 
             //interpolate
             if (steps === 1) {
-                this.setZipColor(0, hsl(h1 + hStep, s1 + sStep, l1 + lStep))
+                this.setPixelRGB(0, hsl(h1 + hStep, s1 + sStep, l1 + lStep))
             } else {
-                this.setZipColor(0, hsl(startHue, saturation, luminance));
+                this.setPixelRGB(0, hsl(startHue, saturation, luminance));
                 for (let i = 1; i < steps - 1; i++) {
                     const h = Math.idiv((h1_100 + i * hStep), 100) + 360;
                     const s = Math.idiv((s1_100 + i * sStep), 100);
                     const l = Math.idiv((l1_100 + i * lStep), 100);
-                    this.setZipColor(i, hsl(h, s, l));
+                    this.setPixelRGB(i, hsl(h, s, l));
                 }
-                this.setZipColor(steps - 1, hsl(endHue, saturation, luminance));
+                this.setPixelRGB(steps - 1, hsl(endHue, saturation, luminance));
             }
             this.show();
         }
@@ -151,7 +151,7 @@ namespace kitronik_halo_hd {
         showBarGraph(value: number, high: number): void {
             if (high <= 0) {
                 this.clear();
-                this.setZipColor(0, 0xFFFF00);
+                this.setPixelRGB(0, 0xFFFF00);
                 this.show();
                 return;
             }
@@ -161,17 +161,17 @@ namespace kitronik_halo_hd {
             const n1 = n - 1;
             let v = Math.idiv((value * n), high);
             if (v == 0) {
-                this.setZipColor(0, 0x666600);
+                this.setPixelRGB(0, 0x666600);
                 for (let i = 1; i < n; ++i)
-                    this.setZipColor(i, 0);
+                    this.setPixelRGB(i, 0);
             } else {
                 for (let i = 0; i < n; ++i) {
                     if (i <= v) {
                         const g = Math.idiv(i * 255, n1);
-                        //this.setZipColor(i, haloDisplay.rgb(0, g, 255 - g));
-						this.setZipColor(i, rgb(g, 255 - g, 0));
+                        //this.setPixelRGB(i, haloDisplay.rgb(0, g, 255 - g));
+						this.setPixelRGB(i, rgb(g, 255 - g, 0));
                     }
-                    else this.setZipColor(i, 0);
+                    else this.setPixelRGB(i, 0);
                 }
             }
             this.show();
@@ -258,7 +258,7 @@ namespace kitronik_halo_hd {
         }
 
         /**
-         * Set the brightness of the ZIP Halo display. This flag only applies to future operation.
+         * Set the brightness of the ZIP Halo display. This flag only applies to future show operation.
          * @param brightness a measure of LED brightness in 0-255. eg: 255
          */
         //% subcategory="ZIP LEDs"
@@ -266,7 +266,10 @@ namespace kitronik_halo_hd {
         //% weight=92
         
         setBrightness(brightness: number): void {
+            //Clamp incoming variable at 0-255
+            Math.clamp(0,255,brightness)
             this.brightness = brightness & 0xff;
+            basic.pause(1) //add a pause to stop wierdnesses
         }
 
         /**
@@ -279,10 +282,6 @@ namespace kitronik_halo_hd {
             pins.digitalWritePin(this.pin, 8);
             // don't yield to avoid races on initialization
     	}
-		
-    	private setZipColor(pixeloffset: number, rgb: number): void {
-            this.setPixelRGB(pixeloffset, rgb);
-        }
 
         private setBufferRGB(offset: number, red: number, green: number, blue: number): void {
             this.buf[offset + 0] = green;

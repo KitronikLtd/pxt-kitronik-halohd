@@ -266,8 +266,15 @@ namespace kitronik_halo_hd {
         //% weight=92
         
         setBrightness(brightness: number): void {
-            //Clamp incoming variable at 0-255
-            Math.clamp(0,255,brightness)
+            //Clamp incoming variable at 0-255 Math.clamp didnt work...
+            if(brightness <0)
+            {
+              brightness = 0
+            }
+            else if brightness > 255)
+            {
+              brightness = 255
+            }
             this.brightness = brightness & 0xff;
             basic.pause(1) //add a pause to stop wierdnesses
         }

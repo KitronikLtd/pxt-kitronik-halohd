@@ -1,6 +1,6 @@
 {
     "name": "pxt-kitronik-halohd",
-    "version": "0.0.43",
+    "version": "0.0.44",
     "description": "Blocks to simplify using the Kitronik :VIEW Halo HD board in PXT",
     "license": "MIT",
     "dependencies": {

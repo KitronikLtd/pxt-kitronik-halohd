@@ -355,17 +355,17 @@ namespace kitronik_halo_hd {
     }
 
     /**
-     * Converts wavelength value to red, green, blue channels and show on ZIPs
+     * Converts wavelength value to red, green, blue channels
      * @param wavelength value between 470 and 625. eg: 500
-     * The LEDs we are using have centre wavelengths of 470nm (Blue) 525nm(Green) and 625nm (Red) 
-     * We blend these linearly to give the impression of the other wavelengths. 
-     * as we cant wavelength shift an actual LED... (Ye canna change the laws of physics Capt)
      */
     //% subcategory="ZIP LEDs"
     //% weight=1 blockGap=8
     //% blockId="kitronik_halo_hd_wavelength" block="wavelength %wavelength|nm"
     //% wavelength.min=470 wavelength.max=625
     export function wavelength(wavelength: number): number {
+     /*  The LEDs we are using have centre wavelengths of 470nm (Blue) 525nm(Green) and 625nm (Red) 
+     * 	 We blend these linearly to give the impression of the other wavelengths. 
+     *   as we cant wavelength shift an actual LED... (Ye canna change the laws of physics Capt)*/
 		let r = 0;
 		let g = 0;
 		let b = 0;

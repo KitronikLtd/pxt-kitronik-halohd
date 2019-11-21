@@ -6,8 +6,8 @@
     "dependencies": {
         "core": "*",
         "ws2812b": "github:KitronikLtd/pxt-ws2812b#v0.0.5",
-        "kitronik_microphone": "github:KitronikLtd/pxt-kitronik-memsmic#v0.0.18",
-        "kitronik_RTC": "github:KitronikLtd/pxt-kitronik-rtc-base#v0.0.9"
+        "kitronik_microphone": "github:KitronikLtd/pxt-kitronik-memsmic#v0.0.21",
+        "kitronik_RTC": "github:KitronikLtd/pxt-kitronik-rtc-base#v0.0.11"
     },
     "files": [
         "README.md",

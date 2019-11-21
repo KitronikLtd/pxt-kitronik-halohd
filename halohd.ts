@@ -348,7 +348,7 @@ namespace kitronik_halo_hd {
         haloDisplay.start = 0;
         haloDisplay._length = numZips;
         haloDisplay.setBrightness(128)
-        haloDisplay.pin = pin;
+        haloDisplay.pin = DigitalPin.P8;
         pins.digitalWritePin(haloDisplay.pin, 8);
         //haloDisplay.setPin(DigitalPin.P8)
         return haloDisplay;

@@ -516,7 +516,7 @@ namespace kitronik_halo_hd {
     }
 
     /**
-    * Performs an action when a spike in sound
+    * Performs an action when a loud noise is detected, such as a clap
     * @param claps is the number of claps to listen out for before running the function eg: 1
     * @param timerperiod is period of time in which to listen for the claps or spikes eg: 1
     * @param soundSpike_handler is function that is run once detection in sound 
@@ -1021,7 +1021,7 @@ namespace kitronik_halo_hd {
     }
 
     /**
-     * Set simple alarm (not inbuilt on RTC chip)
+     * Set simple alarm
      * @param alarmType determines whether the alarm repeats
      * @param hour is the alarm hour setting (24 hour)
      * @param min is the alarm minute setting

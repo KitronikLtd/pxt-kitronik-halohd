@@ -1,3 +1,13 @@
+/*
+
+  Kitronik package for use with Halo HD (www.kitronik.co.uk/5672)
+  This package pulls in other packages to deal with the lower level work for:
+  bit banging the WS2182 protocol
+  Listening on a MEMs microphone
+  Setting and reading a Real time clock chip.
+  
+  
+*/
 	/**
 	* Well known colors for ZIP LEDs
 	*/
@@ -45,6 +55,7 @@
 /**
  * Kitronik ZIP Halo HD MakeCode Package
  */
+ 
 //% weight=100 color=#00A654 icon="\uf111" block="HaloHD"
 //% groups='["Set Time", "Set Date", "Read Time", "Read Date", "Alarm"]'
 namespace kitronik_halo_hd {
@@ -242,6 +253,7 @@ namespace kitronik_halo_hd {
         //% blockId="kitronik_halo_hd_display_show" block="%haloDisplay|show" blockGap=8
         //% weight=96
         show() {
+            //use the Kitronik version which respects brightness for all 
             ws2812b.sendBuffer(this.buf, this.pin, this.brightness);
         }
 
@@ -264,9 +276,9 @@ namespace kitronik_halo_hd {
         //% subcategory="ZIP LEDs"
         //% blockId="kitronik_halo_hd_display_set_brightness" block="%haloDisplay|set brightness %brightness" blockGap=8
         //% weight=92
-        
+        //% brightness.min=0 brightness.max=255
         setBrightness(brightness: number): void {
-            //Clamp incoming variable at 0-255 Math.clamp didnt work...
+            //Clamp incoming variable at 0-255 as values out of this range cause unexpected brightnesses as the lower level code only expects a byte.
             if(brightness <0)
             {
               brightness = 0
@@ -281,14 +293,12 @@ namespace kitronik_halo_hd {
 
         /**
          * Set the pin where the ZIP LED is connected, defaults to P8.
-         */
-        //% weight=10
-        
+         
         setPin(pin: DigitalPin): void {
             this.pin = pin;
             pins.digitalWritePin(this.pin, 8);
             // don't yield to avoid races on initialization
-    	}
+    	}*/
 
         private setBufferRGB(offset: number, red: number, green: number, blue: number): void {
             this.buf[offset + 0] = green;
@@ -307,6 +317,7 @@ namespace kitronik_halo_hd {
                 this.setBufferRGB(i * 3, red, green, blue)
             }
         }
+        
         private setPixelRGB(pixeloffset: number, rgb: number): void {
             if (pixeloffset < 0
                 || pixeloffset >= this._length)
@@ -337,26 +348,34 @@ namespace kitronik_halo_hd {
         haloDisplay.start = 0;
         haloDisplay._length = numZips;
         haloDisplay.setBrightness(128)
-        haloDisplay.setPin(DigitalPin.P8)
+        haloDisplay.pin = pin;
+        pins.digitalWritePin(haloDisplay.pin, 8);
+        //haloDisplay.setPin(DigitalPin.P8)
         return haloDisplay;
     }
 
     /**
      * Converts wavelength value to red, green, blue channels and show on ZIPs
-     * @param wavelength value between 400 and 700. eg: 470
+     * @param wavelength value between 470 and 625. eg: 500
+     * The LEDs we are using have centre wavelengths of 470nm (Blue) 525nm(Green) and 625nm (Red) 
+     * We blend these linearly to give the impression of the other wavelengths. 
+     * as we cant wavelength shift an actual LED... (Ye canna change the laws of physics Capt)
      */
     //% subcategory="ZIP LEDs"
     //% weight=1 blockGap=8
     //% blockId="kitronik_halo_hd_wavelength" block="wavelength %wavelength|nm"
+    //% wavelength.min=470 wavelength.max=625
     export function wavelength(wavelength: number): number {
 		let r = 0;
 		let g = 0;
 		let b = 0;
 		if ((wavelength >= 470) && (wavelength < 525)){
+            //We are between Blue and Green so mix those
 			g = pins.map(wavelength,470,525,0,255);
 			b = pins.map(wavelength,470,525,255,0);
 		}
 		else if ((wavelength >= 525) && (wavelength <= 625)){
+            //we are between Green and Red, so mix those
 			r = pins.map(wavelength,525,625,0,255);
 			g = pins.map(wavelength,525,625,255,0);
 		}

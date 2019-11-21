@@ -1,8 +1,6 @@
-# BETA - TESTING ON THIS EXTENSION IS NOT COMPLETE
+# Kitronik blocks for micro:bit
 
 # pxt-kitronik-halohd
-
-# Kitronik blocks for micro:bit
 
 Blocks that support [Kitronik kits and shields for the micro:bit](https://www.kitronik.co.uk/microbit.html)
 This package is for the [Kitronik :VIEW Halo HD](https://www.kitronik.co.uk/5672)
@@ -14,6 +12,7 @@ kitronik_halo_hd.setBuzzerPin()
 ```
 
 # ZIP LEDs Blocks
+
 Allocates a variable to the number of ZIP LED's to allow use of the LEDs
 ```blocks
 let haloDisplay = kitronik_halo_hd.createZIPHaloDisplay(60)
@@ -80,6 +79,7 @@ haloDisplay.wavelength(470)
 ```
 
 # Microphone blocks
+
 Read sound level block will take an anolgue reading of the current sound level and return as a number
 ```blocks
 basic.showNumber(kitronik_halo_hd.readSoundLevel())
@@ -112,6 +112,7 @@ kitronik_halo_hd.listenForClap(1, 1, function () {
 ```
 
 # Clock Blocks
+
 Set Time Blocks
 These groups of blocks will set the time to the RTC chip. This can be done in either one block for hours,minutes and seconds or set individually
 ```blocks

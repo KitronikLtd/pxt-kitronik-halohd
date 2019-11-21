@@ -1,3 +1,13 @@
+/*
+
+  Kitronik package for use with Halo HD (www.kitronik.co.uk/5672)
+  This package pulls in other packages to deal with the lower level work for:
+  bit banging the WS2182 protocol
+  Listening on a MEMs microphone
+  Setting and reading a Real time clock chip.
+  
+  
+*/
 	/**
 	* Well known colors for ZIP LEDs
 	*/
@@ -45,6 +55,7 @@
 /**
  * Kitronik ZIP Halo HD MakeCode Package
  */
+ 
 //% weight=100 color=#00A654 icon="\uf111" block="HaloHD"
 //% groups='["Set Time", "Set Date", "Read Time", "Read Date", "Alarm"]'
 namespace kitronik_halo_hd {
@@ -66,25 +77,12 @@ namespace kitronik_halo_hd {
     //          ZIP LEDS          //
     ////////////////////////////////
 
-	/**
-	 * Different modes for RGB or RGB+W ZIP strips
-	 */
-	export enum ZipLedMode {
-	    //% block="RGB (GRB format)"
-	    RGB = 0,
-	    //% block="RGB+W"
-	    RGBW = 1,
-	    //% block="RGB (RGB format)"
-	    RGB_RGB = 2
-	}
-
     export class ZIPHaloHd {
     	buf: Buffer;
     	pin: DigitalPin;
     	brightness: number;
     	start: number;
     	_length: number;
-    	_mode: ZipLedMode;
 
 
         /**
@@ -138,16 +136,16 @@ namespace kitronik_halo_hd {
 
             //interpolate
             if (steps === 1) {
-                this.setZipColor(0, hsl(h1 + hStep, s1 + sStep, l1 + lStep))
+                this.setPixelRGB(0, hsl(h1 + hStep, s1 + sStep, l1 + lStep))
             } else {
-                this.setZipColor(0, hsl(startHue, saturation, luminance));
+                this.setPixelRGB(0, hsl(startHue, saturation, luminance));
                 for (let i = 1; i < steps - 1; i++) {
                     const h = Math.idiv((h1_100 + i * hStep), 100) + 360;
                     const s = Math.idiv((s1_100 + i * sStep), 100);
                     const l = Math.idiv((l1_100 + i * lStep), 100);
-                    this.setZipColor(i, hsl(h, s, l));
+                    this.setPixelRGB(i, hsl(h, s, l));
                 }
-                this.setZipColor(steps - 1, hsl(endHue, saturation, luminance));
+                this.setPixelRGB(steps - 1, hsl(endHue, saturation, luminance));
             }
             this.show();
         }
@@ -164,7 +162,7 @@ namespace kitronik_halo_hd {
         showBarGraph(value: number, high: number): void {
             if (high <= 0) {
                 this.clear();
-                this.setZipColor(0, 0xFFFF00);
+                this.setPixelRGB(0, 0xFFFF00);
                 this.show();
                 return;
             }
@@ -174,17 +172,17 @@ namespace kitronik_halo_hd {
             const n1 = n - 1;
             let v = Math.idiv((value * n), high);
             if (v == 0) {
-                this.setZipColor(0, 0x666600);
+                this.setPixelRGB(0, 0x666600);
                 for (let i = 1; i < n; ++i)
-                    this.setZipColor(i, 0);
+                    this.setPixelRGB(i, 0);
             } else {
                 for (let i = 0; i < n; ++i) {
                     if (i <= v) {
                         const g = Math.idiv(i * 255, n1);
-                        //this.setZipColor(i, haloDisplay.rgb(0, g, 255 - g));
-						this.setZipColor(i, rgb(g, 255 - g, 0));
+                        //this.setPixelRGB(i, haloDisplay.rgb(0, g, 255 - g));
+						this.setPixelRGB(i, rgb(g, 255 - g, 0));
                     }
-                    else this.setZipColor(i, 0);
+                    else this.setPixelRGB(i, 0);
                 }
             }
             this.show();
@@ -207,7 +205,6 @@ namespace kitronik_halo_hd {
             haloDisplay.brightness = this.brightness;
             haloDisplay.start = this.start + Math.clamp(0, this._length - 1, start);
             haloDisplay._length = Math.clamp(0, this._length - (haloDisplay.start - this.start), length);
-            haloDisplay._mode = this._mode;
             return haloDisplay;
         }
 		
@@ -220,8 +217,7 @@ namespace kitronik_halo_hd {
         //% blockId="kitronik_halo_hd_display_rotate" block="%haloDisplay|rotate ZIP LEDs by %offset" blockGap=8
         //% weight=93
         rotate(offset: number = 1): void {
-            const stride = this._mode === ZipLedMode.RGBW ? 4 : 3;
-            this.buf.rotate(-offset * stride, this.start * stride, this._length * stride)
+            this.buf.rotate(-offset * 3, this.start * 3, this._length * 3)
         }
 
     	/**
@@ -257,7 +253,8 @@ namespace kitronik_halo_hd {
         //% blockId="kitronik_halo_hd_display_show" block="%haloDisplay|show" blockGap=8
         //% weight=96
         show() {
-            ws2812b.sendBuffer(this.buf, this.pin);
+            //use the Kitronik version which respects brightness for all 
+            ws2812b.sendBuffer(this.buf, this.pin, this.brightness);
         }
 
         /**
@@ -269,46 +266,43 @@ namespace kitronik_halo_hd {
         //% weight=95 blockGap=8
         
         clear(): void {
-            const stride = this._mode === ZipLedMode.RGBW ? 4 : 3;
-            this.buf.fill(0, this.start * stride, this._length * stride);
+            this.buf.fill(0, this.start * 3, this._length * 3);
         }
 
         /**
-         * Set the brightness of the ZIP Halo display. This flag only applies to future operation.
+         * Set the brightness of the ZIP Halo display. This flag only applies to future show operation.
          * @param brightness a measure of LED brightness in 0-255. eg: 255
          */
         //% subcategory="ZIP LEDs"
         //% blockId="kitronik_halo_hd_display_set_brightness" block="%haloDisplay|set brightness %brightness" blockGap=8
         //% weight=92
-        
+        //% brightness.min=0 brightness.max=255
         setBrightness(brightness: number): void {
+            //Clamp incoming variable at 0-255 as values out of this range cause unexpected brightnesses as the lower level code only expects a byte.
+            if(brightness <0)
+            {
+              brightness = 0
+            }
+            else if (brightness > 255)
+            {
+              brightness = 255
+            }
             this.brightness = brightness & 0xff;
+            basic.pause(1) //add a pause to stop wierdnesses
         }
 
         /**
          * Set the pin where the ZIP LED is connected, defaults to P8.
-         */
-        //% weight=10
-        
+         
         setPin(pin: DigitalPin): void {
             this.pin = pin;
             pins.digitalWritePin(this.pin, 8);
             // don't yield to avoid races on initialization
-    	}
-		
-    	private setZipColor(pixeloffset: number, rgb: number): void {
-            this.setPixelRGB(pixeloffset, rgb);
-        }
+    	}*/
 
         private setBufferRGB(offset: number, red: number, green: number, blue: number): void {
-			
-            if (this._mode === ZipLedMode.RGB_RGB) {
-                this.buf[offset + 0] = red;
-                this.buf[offset + 1] = green;
-            } else {
-                this.buf[offset + 0] = green;
-                this.buf[offset + 1] = red;
-            }
+            this.buf[offset + 0] = green;
+            this.buf[offset + 1] = red;
             this.buf[offset + 2] = blue;
         }
 
@@ -318,69 +312,24 @@ namespace kitronik_halo_hd {
             let green = unpackG(rgb);
             let blue = unpackB(rgb);
 
-            const br = this.brightness;
-            if (br < 255) {
-                red = (red * br) >> 8;
-                green = (green * br) >> 8;
-                blue = (blue * br) >> 8;
-            }
             const end = this.start + this._length;
-            const stride = this._mode === ZipLedMode.RGBW ? 4 : 3;
             for (let i = this.start; i < end; ++i) {
-                this.setBufferRGB(i * stride, red, green, blue)
+                this.setBufferRGB(i * 3, red, green, blue)
             }
         }
-        private setAllW(white: number) {
-            if (this._mode !== ZipLedMode.RGBW)
-                return;
-
-            let br = this.brightness;
-            if (br < 255) {
-                white = (white * br) >> 8;
-            }
-            let buf = this.buf;
-            let end = this.start + this._length;
-            for (let i = this.start; i < end; ++i) {
-                let ledoffset = i * 4;
-                buf[ledoffset + 3] = white;
-            }
-        }
+        
         private setPixelRGB(pixeloffset: number, rgb: number): void {
             if (pixeloffset < 0
                 || pixeloffset >= this._length)
                 return;
 
-            let stride = this._mode === ZipLedMode.RGBW ? 4 : 3;
-            pixeloffset = (pixeloffset + this.start) * stride;
+            pixeloffset = (pixeloffset + this.start) * 3;
 
             let red = unpackR(rgb);
             let green = unpackG(rgb);
             let blue = unpackB(rgb);
 
-            let br = this.brightness;
-            if (br < 255) {
-                red = (red * br) >> 8;
-                green = (green * br) >> 8;
-                blue = (blue * br) >> 8;
-            }
             this.setBufferRGB(pixeloffset, red, green, blue)
-        }
-        private setPixelW(pixeloffset: number, white: number): void {
-            if (this._mode !== ZipLedMode.RGBW)
-                return;
-
-            if (pixeloffset < 0
-                || pixeloffset >= this._length)
-                return;
-
-            pixeloffset = (pixeloffset + this.start) * 4;
-
-            let br = this.brightness;
-            if (br < 255) {
-                white = (white * br) >> 8;
-            }
-            let buf = this.buf;
-            buf[pixeloffset + 3] = white;
         }
     }
 
@@ -395,32 +344,38 @@ namespace kitronik_halo_hd {
     //% blockSetVariable=haloDisplay
     export function createZIPHaloDisplay(numZips: number): ZIPHaloHd {
         let haloDisplay = new ZIPHaloHd();
-        let stride = 0 === ZipLedMode.RGBW ? 4 : 3;
-        haloDisplay.buf = pins.createBuffer(numZips * stride);
+        haloDisplay.buf = pins.createBuffer(numZips * 3);
         haloDisplay.start = 0;
         haloDisplay._length = numZips;
-        haloDisplay._mode = 0;
         haloDisplay.setBrightness(128)
-        haloDisplay.setPin(DigitalPin.P8)
+        haloDisplay.pin = DigitalPin.P8;
+        pins.digitalWritePin(haloDisplay.pin, 8);
+        //haloDisplay.setPin(DigitalPin.P8)
         return haloDisplay;
     }
 
     /**
      * Converts wavelength value to red, green, blue channels and show on ZIPs
-     * @param wavelength value between 400 and 700. eg: 470
+     * @param wavelength value between 470 and 625. eg: 500
+     * The LEDs we are using have centre wavelengths of 470nm (Blue) 525nm(Green) and 625nm (Red) 
+     * We blend these linearly to give the impression of the other wavelengths. 
+     * as we cant wavelength shift an actual LED... (Ye canna change the laws of physics Capt)
      */
     //% subcategory="ZIP LEDs"
     //% weight=1 blockGap=8
     //% blockId="kitronik_halo_hd_wavelength" block="wavelength %wavelength|nm"
+    //% wavelength.min=470 wavelength.max=625
     export function wavelength(wavelength: number): number {
 		let r = 0;
 		let g = 0;
 		let b = 0;
 		if ((wavelength >= 470) && (wavelength < 525)){
+            //We are between Blue and Green so mix those
 			g = pins.map(wavelength,470,525,0,255);
 			b = pins.map(wavelength,470,525,255,0);
 		}
 		else if ((wavelength >= 525) && (wavelength <= 625)){
+            //we are between Green and Red, so mix those
 			r = pins.map(wavelength,525,625,0,255);
 			g = pins.map(wavelength,525,625,255,0);
 		}

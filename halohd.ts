@@ -34,6 +34,9 @@
 		Black = 0x000000
 	}
 
+    /** 
+     * Different time options for the Real Time Clock
+     */
 	enum TimeParameter {
 		//% block=hours
 		Hours,
@@ -43,6 +46,9 @@
 		Seconds
 	}
 
+    /**
+     * Different date options for the Real Time Clock
+     */
 	enum DateParameter {
 		//% block=day
 		Day,
@@ -264,7 +270,6 @@ namespace kitronik_halo_hd {
         //% subcategory="ZIP LEDs"
         //% blockId="kitronik_halo_hd_display_clear" block="%haloDisplay|clear"
         //% weight=95 blockGap=8
-        
         clear(): void {
             this.buf.fill(0, this.start * 3, this._length * 3);
         }
@@ -291,23 +296,15 @@ namespace kitronik_halo_hd {
             basic.pause(1) //add a pause to stop wierdnesses
         }
 
-        /**
-         * Set the pin where the ZIP LED is connected, defaults to P8.
-         
-        setPin(pin: DigitalPin): void {
-            this.pin = pin;
-            pins.digitalWritePin(this.pin, 8);
-            // don't yield to avoid races on initialization
-    	}*/
-
+        //Sets up the buffer for pushing LED control data out to LEDs
         private setBufferRGB(offset: number, red: number, green: number, blue: number): void {
             this.buf[offset + 0] = green;
             this.buf[offset + 1] = red;
             this.buf[offset + 2] = blue;
         }
 
+        //Separates out Red, Green and Blue data and fills the LED control data buffer for all LEDs
         private setAllRGB(rgb: number) {
-
             let red = unpackR(rgb);
             let green = unpackG(rgb);
             let blue = unpackB(rgb);
@@ -318,6 +315,7 @@ namespace kitronik_halo_hd {
             }
         }
         
+        //Separates out Red, Green and Blue data and fills the LED control data buffer for a single LED
         private setPixelRGB(pixeloffset: number, rgb: number): void {
             if (pixeloffset < 0
                 || pixeloffset >= this._length)
@@ -350,7 +348,6 @@ namespace kitronik_halo_hd {
         haloDisplay.setBrightness(128)
         haloDisplay.pin = DigitalPin.P8;
         pins.digitalWritePin(haloDisplay.pin, 8);
-        //haloDisplay.setPin(DigitalPin.P8)
         return haloDisplay;
     }
 
@@ -405,17 +402,21 @@ namespace kitronik_halo_hd {
         return color;
     }
 
+    //Combines individual RGB settings to be a single number
     function packRGB(a: number, b: number, c: number): number {
         return ((a & 0xFF) << 16) | ((b & 0xFF) << 8) | (c & 0xFF);
     }
+    //Separates red value from combined number
     function unpackR(rgb: number): number {
         let r = (rgb >> 16) & 0xFF;
         return r;
     }
+    //Separates green value from combined number
     function unpackG(rgb: number): number {
         let g = (rgb >> 8) & 0xFF;
         return g;
     }
+    //Separates blue value from combined number
     function unpackB(rgb: number): number {
         let b = (rgb) & 0xFF;
         return b;
@@ -460,6 +461,9 @@ namespace kitronik_halo_hd {
         return packRGB(r, g, b);
     }
 
+    /**
+     * Options for direction hue changes, used by rainbow block (never visible to end user)
+     */
     export enum HueInterpolationDirection {
         Clockwise,
         CounterClockwise,

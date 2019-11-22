@@ -225,7 +225,17 @@ namespace kitronik_halo_hd {
         rotate(offset: number = 1): void {
             this.buf.rotate(-offset * 3, this.start * 3, this._length * 3)
         }
-
+    	/**
+         * Sets whole ZIP Halo display as a given color (range 0-255 for r, g, b). Call Show to make changes visible 
+         * @param rgb RGB color of the LED
+         */
+        //% subcategory="ZIP LEDs"
+        //% blockId="kitronik_halo_hd_display_only_set_strip_color" block="%haloDisplay|set color %rgb=kitronik_halo_hd_colors" 
+        //% weight=99 blockGap=8
+        setColor(rgb: number) {
+        	rgb = rgb >> 0;
+            this.setAllRGB(rgb);
+        }
     	/**
          * Shows whole ZIP Halo display as a given color (range 0-255 for r, g, b). 
          * @param rgb RGB color of the LED

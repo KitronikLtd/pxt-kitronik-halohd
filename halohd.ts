@@ -483,9 +483,9 @@ namespace kitronik_halo_hd {
     ////////////////////////////////
     //         MICROPHONE         //
     ////////////////////////////////
-
+     
     /**
-    * Read Sound Level blocks returns back a number of the current sound level at that point
+    * Read Sound Level blocks returns back a number 0-512 of the current sound level at that point
     */
     //% subcategory="Microphone"
     //% blockId=kitronik_halo_hd_read_sound_level
@@ -495,12 +495,11 @@ namespace kitronik_halo_hd {
         if (kitronik_microphone.initialised == false) {
             kitronik_microphone.init()
         }
-        let read = (pins.analogReadPin(kitronik_microphone.microphonePin) - 520)
-        return read
+        return kitronik_microphone.readSoundLevel()
     }
 
     /**
-    * Read Sound Level blocks returns back a number of the current sound level averaged over 5 samples
+    * Read Sound Level blocks returns back a number 0-512 of the current sound level averaged over 5 samples
     */
     //% subcategory="Microphone"
     //% blockId=kitronik_halo_hd_read_average_sound_level

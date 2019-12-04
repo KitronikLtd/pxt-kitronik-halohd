@@ -492,9 +492,6 @@ namespace kitronik_halo_hd {
     //% block="read sound level"
     //% weight=100 blockGap=8
     export function readSoundLevel() {
-        if (kitronik_microphone.initialised == false) {
-            kitronik_microphone.init()
-        }
         return kitronik_microphone.readSoundLevel()
     }
 

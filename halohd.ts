@@ -388,6 +388,40 @@ namespace kitronik_halo_hd {
 		}
         return packRGB(r, g, b);
     }
+    
+    /**
+     * Converts hue (0-360) to an RGB value. 
+     * Does not attempt to modify luminosity or saturation. 
+     * Colours end up fully saturated. 
+     * @param hue value between 0 and 360
+     */
+    //% subcategory="ZIP LEDs"
+    //% weight=1 blockGap=8
+    //% blockId="kitronik_halo_hd_hue" block="hue %hue"
+    //% hue.min=0 hue.max=360
+    export function hueToRGB(hue: number): number {
+        let redVal = 0
+        let greenVal = 0
+        let blueVal = 0
+        let hueStep = 2.125
+        if ((hue >= 0) && (hue < 120)) { //RedGreen section
+            greenVal = Math.floor((hue) * hueStep)
+            redVal = 255 - greenVal
+        }
+        else if ((hue >= 120) && (hue < 240)) { //GreenBlueSection
+            blueVal = Math.floor((hue - 120) * hueStep)
+            greenVal = 255 - blueVal
+        }
+        else if ((hue >= 240) && (hue < 360)) { //BlueRedSection
+            redVal = Math.floor((hue - 240) * hueStep)
+            blueVal = 255 - redVal
+        }
+        return ((redVal & 0xFF) << 16) | ((greenVal & 0xFF) << 8) | (blueVal & 0xFF);
+    }
+        
+     /*  The LEDs we are using have centre wavelengths of 470nm (Blue) 525nm(Green) and 625nm (Red) 
+     * 	 We blend these linearly to give the impression of the other wavelengths. 
+     *   as we cant wavelength shift an actual LED... (Ye canna change the laws of physics Capt)*/
 
     /**
      * Converts value to red, green, blue channels

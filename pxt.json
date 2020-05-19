@@ -1,6 +1,6 @@
 {
     "name": "pxt-kitronik-halohd",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Blocks to simplify using the Kitronik :VIEW Halo HD board in PXT",
     "license": "MIT",
     "dependencies": {
@@ -12,10 +12,10 @@
     "files": [
         "README.md",
         "halohd.ts",
-        "1-BasicClockTutorial",
-        "2-ClockAdjustmentTutorial",
-        "3-AlarmClockTutorial",
-        "4-WakeUpAlarmClockTutorial"
+        "a_BasicClockTutorial",
+        "b_ClockAdjustmentTutorial",
+        "c_AlarmClockTutorial",
+        "d_WakeUpAlarmClockTutorial"
     ],
     "testFiles": [
         "tests.ts"

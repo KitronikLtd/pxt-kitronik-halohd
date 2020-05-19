@@ -12,10 +12,10 @@
     "files": [
         "README.md",
         "halohd.ts",
-	"1-BasicClockTutorial",
-	"2-ClockAdjustmentTutorial",
-	"3-AlarmClockTutorial",
-	"4-WakeUpAlarmClockTutorial"
+        "1-BasicClockTutorial",
+        "2-ClockAdjustmentTutorial",
+        "3-AlarmClockTutorial",
+        "4-WakeUpAlarmClockTutorial"
     ],
     "testFiles": [
         "tests.ts"

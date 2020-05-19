@@ -21,6 +21,10 @@
         "tests.ts"
     ],
     "public": true,
+    "supportedTargets": [
+        "microbit"
+    ],
+    "preferredEditor": "tsprj",
     "yotta": {
         "config": {
             "microbit-dal": {

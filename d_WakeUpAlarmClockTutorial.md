@@ -41,7 +41,7 @@ input.onButtonPressed(Button.B, function () {
     }
 })
 kitronik_halo_hd.onAlarmTrigger(function () {
-    music.beginMelody(music.builtInMelody(Melodies.PowerUp), MelodyOptions.Once)
+    music.startMelody(music.builtInMelody(Melodies.PowerUp), MelodyOptions.Once)
 })
 let alarmHours = 0
 let hours = 0
@@ -239,7 +239,7 @@ kitronik_halo_hd.onAlarmTrigger(function () {
         basic.pause(100)
         wakeUpBrightness += 1
     }
-    music.beginMelody(music.builtInMelody(Melodies.PowerUp), MelodyOptions.Once)
+    music.startMelody(music.builtInMelody(Melodies.PowerUp), MelodyOptions.Once)
     alarmRunning = false
 })
 ```
@@ -268,7 +268,7 @@ kitronik_halo_hd.onAlarmTrigger(function () {
         basic.pause(100)
         wakeUpBrightness += 1
     }
-    music.beginMelody(music.builtInMelody(Melodies.PowerUp), MelodyOptions.Once)
+    music.startMelody(music.builtInMelody(Melodies.PowerUp), MelodyOptions.Once)
     alarmRunning = false
 })
 ```
@@ -423,7 +423,7 @@ kitronik_halo_hd.onAlarmTrigger(function () {
         basic.pause(50)
         blue += 1
     }
-    music.beginMelody(music.builtInMelody(Melodies.PowerUp), MelodyOptions.Once)
+    music.startMelody(music.builtInMelody(Melodies.PowerUp), MelodyOptions.Once)
     alarmRunning = false
 })
 ```

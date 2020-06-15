@@ -287,7 +287,7 @@ let setTimeMode = false
 let enterTime = false
 let setAlarmMode = false
 kitronik_halo_hd.onAlarmTrigger(function () {
-    music.beginMelody(music.builtInMelody(Melodies.PowerUp), MelodyOptions.Once)
+    music.startMelody(music.builtInMelody(Melodies.PowerUp), MelodyOptions.Once)
 })
 ```
 

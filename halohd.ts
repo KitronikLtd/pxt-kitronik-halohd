@@ -1116,7 +1116,7 @@ namespace kitronik_halo_hd {
     //Function to check if an alarm is triggered and raises the trigger event if true
     //Runs in background once an alarm is set, but only if alarmSetFlag = 1
     function backgroundAlarmCheck(): void {
-		let checkHour = readTimeParameter(TimeParameter.Hours)
+        let checkHour = readTimeParameter(TimeParameter.Hours)
         let checkMin = readTimeParameter(TimeParameter.Minutes)
         if (alarmTriggered == 1 && alarmRepeat == 1) {
             if (checkMin != alarmMin) {
@@ -1126,11 +1126,11 @@ namespace kitronik_halo_hd {
             }
         }
         if (checkHour == alarmHour && checkMin == alarmMin) {
-            alarmHandler()
             alarmTriggered = 1
             if (alarmOff == 1) {
-                basic.pause(2500)
                 alarmSetFlag = 0
+                alarmHandler()
+                basic.pause(2500)
                 if (alarmRepeat == 1) {
                     control.inBackground(() => {
                         checkMin = readTimeParameter(TimeParameter.Minutes)
@@ -1142,6 +1142,9 @@ namespace kitronik_halo_hd {
                         simpleAlarmSet(AlarmType.Repeating, alarmHour, alarmMin, alarmOff) //Reset the alarm after the current minute has changed
                     })
                 }
+            }
+            else if (alarmOff == 2) {
+                alarmHandler()
             }
         }
         if (alarmTriggered == 1 && alarmOff == 2 && checkMin != alarmMin) {

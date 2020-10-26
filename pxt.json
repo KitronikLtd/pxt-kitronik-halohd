@@ -5,6 +5,7 @@
     "license": "MIT",
     "dependencies": {
         "core": "*",
+        "ws2812b": "github:KitronikLtd/pxt-ws2812b#v0.0.5",
         "kitronik_microphone": "github:KitronikLtd/pxt-kitronik-memsmic#v0.0.27",
         "kitronik_RTC": "github:KitronikLtd/pxt-kitronik-rtc-base#v0.0.12"
     },

@@ -81,7 +81,7 @@ Add it to the ``||basic:on start||`` block and set it to ``||logic:false||`` usi
 ```blocks
 let haloDisplay = kitronik_halo_hd.createZIPHaloDisplay(60)
 setTimeMode = false
-enterTime = false
+enterNewTime = false
 setAlarmMode = false
 ```
 
@@ -189,13 +189,13 @@ input.onButtonPressed(Button.A, function () {
 
 ### Step 8
 Our final change to the control button interface is to the ``||input:on button A+B pressed||`` block.
-We will need to enter a time for both the "Set Time" and "Set Alarm" modes, so add a check to the ``||logic:if||`` statement to enable ``||variables:enterTime||`` to be set to ``||logic:true||`` if we are in "Set Time" mode **OR** "Set Alarm" mode.
+We will need to enter a time for both the "Set Time" and "Set Alarm" modes, so add a check to the ``||logic:if||`` statement to enable ``||variables:enterNewTime||`` to be set to ``||logic:true||`` if we are in "Set Time" mode **OR** "Set Alarm" mode.
 
 #### ~ tutorialhint
 ```blocks
 input.onButtonPressed(Button.AB, function () {
     if (setTimeMode == true || setAlarmMode == true) {
-        enterTime = true
+        enterNewTime = true
     } else {
         setTimeMode = true
     }
@@ -216,7 +216,7 @@ basic.forever(function () {
         if (hours >= 12) {
             hours += -12
         }
-        while (enterTime == false) {
+        while (enterNewTime == false) {
             if (minutes > 59) {
                 minutes = 0
                 hours += 1
@@ -231,7 +231,7 @@ basic.forever(function () {
             basic.pause(1)
         }
         kitronik_halo_hd.setTime(hours, minutes, 0)
-        enterTime = false
+        enterNewTime = false
         setTimeMode = false
     } else if (setAlarmMode == true) {
         
@@ -258,7 +258,7 @@ Go through the code we have just placed in the ``||logic:else if||`` section and
 
 ### Step 12
 Now that the variables have been changed, the only other differences between the two sections are after the ``||loops:while||`` loop.
-Remove the ``||kitronik_halo_hd.Set Time||``, ``||variables:set enterTime to false||`` and ``||variables:set setTimeMode to false||`` blocks.
+Remove the ``||kitronik_halo_hd.Set Time||``, ``||variables:set enterNewTime to false||`` and ``||variables:set setTimeMode to false||`` blocks.
 
 ### Step 13
 Inside the Clock section of the Halo HD extension is the ``||kitronik_halo_hd.set alarm||`` block.
@@ -271,7 +271,7 @@ kitronik_halo_hd.simpleAlarmSet(kitronik_halo_hd.AlarmType.Single, alarmHours, a
 
 ### Step 14
 Just like with the "Set Time" mode, we now need to set some variables to be ``||logic:false||``.
-Do this for: ``||variables:silenceAlarm||``, ``||variables:enterTime||`` and ``||variables:setAlarmMode||``.
+Do this for: ``||variables:silenceAlarm||``, ``||variables:enterNewTime||`` and ``||variables:setAlarmMode||``.
 
 ## Triggering & Turning Off the Alarm
 
@@ -284,7 +284,7 @@ Add the ``||kitronik_halo_hd.on alarm trigger||`` block from inside the Clock se
 kitronik_halo_hd.setBuzzerPin()
 let haloDisplay = kitronik_halo_hd.createZIPHaloDisplay(60)
 let setTimeMode = false
-let enterTime = false
+let enterNewTime = false
 let setAlarmMode = false
 kitronik_halo_hd.onAlarmTrigger(function () {
     music.startMelody(music.builtInMelody(Melodies.PowerUp), MelodyOptions.Once)

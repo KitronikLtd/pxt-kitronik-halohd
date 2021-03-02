@@ -629,6 +629,7 @@ namespace kitronik_halo_hd {
     let alarmTriggered = 0  //Flag to show if the alarm has been triggered ('1') or not ('0')
     let alarmTriggerHandler: Action
     let alarmHandler: Action
+    let simpleCheck = 0 //If '1' shows that the alarmHandler is not required as the check is inside an "if" statement
 
     /**
      * Set time on RTC, as three numbers
@@ -1131,7 +1132,9 @@ namespace kitronik_halo_hd {
             alarmTriggered = 1
             if (alarmOff == 1) {
                 alarmSetFlag = 0
-                alarmHandler()
+                if (simpleCheck != 1) {
+                    alarmHandler() //This causes a problem for the simpleAlarmCheck() function, so only runs for onAlarmTrigger()
+                }
                 basic.pause(2500)
                 if (alarmRepeat == 1) {
                     control.inBackground(() => {
@@ -1146,7 +1149,9 @@ namespace kitronik_halo_hd {
                 }
             }
             else if (alarmOff == 2) {
-                alarmHandler()
+                if (simpleCheck != 1) {
+                    alarmHandler() //This causes a problem for the simpleAlarmCheck() function, so only runs for onAlarmTrigger()
+                }
             }
         }
         if (alarmTriggered == 1 && alarmOff == 2 && checkMin != alarmMin) {

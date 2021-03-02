@@ -1180,6 +1180,7 @@ namespace kitronik_halo_hd {
     //% block="alarm triggered"
     //% weight=24 blockGap=8
     export function simpleAlarmCheck(): boolean {
+	simpleCheck = 1 //Makes sure the alarmHandler() is not called
         let checkHour = readTimeParameter(TimeParameter.Hours)
         let checkMin = readTimeParameter(TimeParameter.Minutes)
         if (alarmSetFlag == 1 && checkHour == alarmHour && checkMin == alarmMin) {

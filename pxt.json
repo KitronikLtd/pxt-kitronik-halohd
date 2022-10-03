@@ -14,7 +14,9 @@
         "a_BasicClockTutorial.md",
         "b_ClockAdjustmentTutorial.md",
         "c_AlarmClockTutorial.md",
-        "d_WakeUpAlarmClockTutorial.md"
+        "d_WakeUpAlarmClockTutorial.md",
+        "_locales/sk/pxt-kitronik-halohd-jsdoc-strings.json",
+        "_locales/sk/pxt-kitronik-halohd-strings.json"
     ],
     "testFiles": [
         "tests.ts"

@@ -414,7 +414,7 @@ namespace kitronik_halo_hd {
             blueVal = Math.floor((hue - 120) * hueStep)
             greenVal = 255 - blueVal
         }
-        else if ((hue >= 240) && (hue < 360)) { //BlueRedSection
+        else if ((hue >= 240) && (hue <= 360)) { //BlueRedSection
             redVal = Math.floor((hue - 240) * hueStep)
             blueVal = 255 - redVal
         }
@@ -426,7 +426,7 @@ namespace kitronik_halo_hd {
      *   as we cant wavelength shift an actual LED... (Ye canna change the laws of physics Capt)*/
 
     /**
-     * Converts value to red, green, blue channels
+     * Converts red, green, blue channels to value
      * @param red value of the red channel between 0 and 255. eg: 255
      * @param green value of the green channel between 0 and 255. eg: 255
      * @param blue value of the blue channel between 0 and 255. eg: 255
